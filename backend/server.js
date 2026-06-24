@@ -8,10 +8,15 @@ const cloudinary = require('./cloudinaryConfig');
 const Reply = require('./models/Reply'); 
 const Meeting = require('./models/Meeting');
 
+// --- GROQ AI SETUP ---
 const Groq = require('groq-sdk');
 const fs = require('fs');
 const path = require('path');
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+// --- SOCKET.IO SETUP ---
+const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
 const PORT = 5000;
@@ -19,10 +24,33 @@ const PORT = 5000;
 app.use(cors());
 app.use(express.json());
 
+// 1. Wrap our Express app in a standard HTTP server so WebSockets can attach to it
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: { origin: "http://localhost:5173", methods: ["GET", "POST"] }
+});
+
+// 2. Listen for users opening the website
+io.on('connection', (socket) => {
+    console.log('⚡ A user connected via WebSocket:', socket.id);
+
+    // When a user clicks on a Meeting card, put them in a "Room" for that specific meeting
+    socket.on('joinMeeting', (meetingId) => {
+        socket.join(meetingId);
+        console.log(`User ${socket.id} joined meeting room: ${meetingId}`);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected:', socket.id);
+    });
+});
+
+// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, { family: 4 })
   .then(() => console.log("Successfully connected to MongoDB Cloud!"))
   .catch((error) => console.log("Error connecting to MongoDB:", error));
 
+// Routes
 app.get('/api/meetings/:id', async (req, res) => {
     try {
         const meeting = await Meeting.findById(req.params.id);
@@ -61,6 +89,7 @@ app.get('/api/replies/:meetingId', async (req, res) => {
     }
 });
 
+// --- THE AI VIDEO UPLOAD PIPELINE ---
 const upload = multer({ storage: multer.memoryStorage() });
 
 app.post('/api/replies', upload.single('video'), async (req, res) => {
@@ -122,6 +151,11 @@ app.post('/api/replies', upload.single('video'), async (req, res) => {
         });
 
         await newReply.save();
+        
+        // 3. THE MAGIC REAL-TIME PUSH: 
+        // Instantly blast this new video out to anyone sitting in this specific meeting room!
+        io.to(meetingId).emit('newReply', newReply);
+
         res.status(201).json(newReply);
 
     } catch (error) {
@@ -130,6 +164,7 @@ app.post('/api/replies', upload.single('video'), async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
+// 4. Important: We must call `server.listen` now instead of `app.listen` so WebSockets work!
+server.listen(PORT, () => {
     console.log(`Server is running live on http://localhost:${PORT}`);
 });

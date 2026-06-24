@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import VideoRecorder from '../components/VideoRecorder';
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:5000');
 
 function MeetingView() {
   const { id } = useParams(); 
   const [meeting, setMeeting] = useState(null);
-  
   const [replies, setReplies] = useState([]);
 
   useEffect(() => {
@@ -17,6 +19,15 @@ function MeetingView() {
       .then((response) => response.json())
       .then((data) => setReplies(data));
       
+    socket.emit('joinMeeting', id);
+
+    socket.on('newReply', (newVideoReply) => {
+      setReplies((previousReplies) => [newVideoReply, ...previousReplies]);
+    });
+
+    return () => {
+      socket.off('newReply');
+    };
   }, [id]);
 
   if (!meeting) return <div className="app-container"><p>Loading...</p></div>;
@@ -47,7 +58,6 @@ function MeetingView() {
                   style={{ width: '100%', borderRadius: '8px' }}
                 />
                 
-                {/* Paint the Groq AI Summary if it exists! */}
                 {reply.transcript && (
                   <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: 'rgba(192, 132, 252, 0.1)', borderRadius: '8px', borderLeft: '3px solid #c084fc' }}>
                     <h4 style={{ margin: '0 0 0.5rem 0', color: '#c084fc' }}>✨ AI Summary</h4>
@@ -69,10 +79,10 @@ function MeetingView() {
         </div>
 
         <div className="ai-summary-sidebar">
-          <h3>✨ AI Summary</h3>
+          <h3>✨ Meeting Overview</h3>
           <div className="glass-panel">
-            <p><strong>Decisions:</strong> Pending...</p>
-            <p><strong>Action Items:</strong> Waiting for videos...</p>
+            <p><strong>Status:</strong> Tracking asynchronously...</p>
+            <p><strong>Note:</strong> Video-specific AI summaries now appear directly beneath each video in the thread!</p>
           </div>
         </div>
       </div>
