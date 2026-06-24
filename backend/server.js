@@ -4,126 +4,120 @@ const mongoose = require('mongoose');
 require('dotenv').config(); 
 const multer = require('multer');
 const streamifier = require('streamifier');
-const cloudinary = require('./cloudinaryConfig');
-
-// --- DATABASE MODELS ---
-const Reply = require('./models/Reply'); 
-const Meeting = require('./models/Meeting');
-const User = require('./models/User');
-const Workspace = require('./models/Workspace');
-const authenticateToken = require('./middleware/auth');
-
-// --- GROQ AI SETUP ---
-const Groq = require('groq-sdk');
+const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
-const path = require('path');
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
-// --- SOCKET.IO SETUP ---
+const Groq = require('groq-sdk');
 const http = require('http');
 const { Server } = require('socket.io');
-
-const app = express();
-const PORT = 5000;
-
-app.use(cors());
-app.use(express.json());
-
-// Create HTTP Server and attach Socket.io
-const server = http.createServer(app);
-const io = new Server(server, {
-    cors: { origin: "http://localhost:5173", methods: ["GET", "POST"] }
-});
-
-// Listen for WebSocket connections
-io.on('connection', (socket) => {
-    console.log('⚡ A user connected via WebSocket:', socket.id);
-    
-    socket.on('joinMeeting', (meetingId) => {
-        socket.join(meetingId);
-        console.log(`User ${socket.id} joined meeting room: ${meetingId}`);
-    });
-
-    socket.on('disconnect', () => {
-        console.log('User disconnected:', socket.id);
-    });
-});
-
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, { family: 4 })
-  .then(() => console.log("Successfully connected to MongoDB Cloud!"))
-  .catch((error) => console.log("Error connecting to MongoDB:", error));
-
-// --- AUTHENTICATION ROUTES ---
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// The Secret Key used to sign the VIP Wristbands 
-const JWT_SECRET = "super_secret_silent_meeting_key";
+// Import Models
+const Meeting = require('./models/Meeting');
+const Reply = require('./models/Reply');
+const User = require('./models/User');
+const Workspace = require('./models/Workspace');
 
-// Register a new user
+const app = express();
+app.use(cors());
+app.use(express.json()); 
+
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: { origin: "http://localhost:5173", methods: ["GET", "POST", "PUT", "DELETE"] }
+});
+
+const PORT = process.env.PORT || 5000;
+const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_dev_key_123';
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('Successfully connected to MongoDB Cloud!'))
+  .catch((err) => console.error('MongoDB connection error:', err));
+
+// Configure Cloudinary
+cloudinary.config({ 
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+  api_key: process.env.CLOUDINARY_API_KEY, 
+  api_secret: process.env.CLOUDINARY_API_SECRET 
+});
+
+// Configure Groq
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+// Configure Multer
+const upload = multer({ 
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
+});
+
+// WebSockets
+io.on('connection', (socket) => {
+    socket.on('join_meeting', (meetingId) => {
+        socket.join(meetingId);
+    });
+    socket.on('disconnect', () => {});
+});
+
+// Authentication Middleware
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) return res.status(401).json({ error: "Access Denied" });
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ error: "Invalid Token" });
+        req.user = user; 
+        next();
+    });
+};
+
+// --- AUTHENTICATION ROUTES ---
+
 app.post('/api/auth/register', async (req, res) => {
     try {
         const { name, email, password } = req.body;
-
-        // 1. Check if user already exists
         const existingUser = await User.findOne({ email });
-        if (existingUser) return res.status(400).json({ error: "Email already in use" });
+        if (existingUser) return res.status(400).json({ error: "Email already exists" });
 
-        // 2. The Blender: Hash the password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        // 3. Save the new user
+        const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = new User({ name, email, password: hashedPassword });
-        await newUser.save();
+        const savedUser = await newUser.save();
 
-        // 4. Create a default "Personal Workspace" for them
-        const newWorkspace = new Workspace({
-            name: `${name}'s Workspace`,
-            ownerId: newUser._id,
-            members: [newUser._id]
+        const defaultWorkspace = new Workspace({
+            name: `${savedUser.name}'s Workspace`,
+            ownerId: savedUser._id,
+            members: [savedUser._id]
         });
-        await newWorkspace.save();
+        await defaultWorkspace.save();
 
-        // 5. Hand them their VIP Wristband (JWT Token)
-        const token = jwt.sign({ userId: newUser._id }, JWT_SECRET, { expiresIn: '7d' });
-
-        res.status(201).json({ token, user: { id: newUser._id, name: newUser.name, email: newUser.email } });
+        const token = jwt.sign({ userId: savedUser._id }, JWT_SECRET, { expiresIn: '7d' });
+        res.status(201).json({ token, user: { id: savedUser._id, name: savedUser.name, email: savedUser.email } });
     } catch (error) {
-        console.error("Registration Error:", error);
         res.status(500).json({ error: "Registration failed" });
     }
 });
 
-// Log an existing user in
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-
-        // 1. Find the user
         const user = await User.findOne({ email });
         if (!user) return res.status(404).json({ error: "User not found" });
 
-        // 2. Check the password against the hashed version
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
 
-        // 3. Hand them a new wristband
         const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '7d' });
-
         res.status(200).json({ token, user: { id: user._id, name: user.name, email: user.email } });
     } catch (error) {
-        console.error("Login Error:", error);
         res.status(500).json({ error: "Login failed" });
     }
 });
 
-// --- MEETING & REPLY ROUTES ---
-// 0. Get all Workspaces for the logged-in user
+// --- WORKSPACE ROUTES ---
+
 app.get('/api/workspaces', authenticateToken, async (req, res) => {
     try {
-        // Find every workspace where this user's ID is in the "members" array
         const userWorkspaces = await Workspace.find({ members: req.user.userId });
         res.status(200).json(userWorkspaces);
     } catch (error) {
@@ -131,62 +125,40 @@ app.get('/api/workspaces', authenticateToken, async (req, res) => {
     }
 });
 
-// 0.5. Invite a teammate to a Workspace
 app.post('/api/workspaces/invite', authenticateToken, async (req, res) => {
     try {
         const { workspaceId, email } = req.body;
-
-        // 1. Find the workspace
         const workspace = await Workspace.findById(workspaceId);
         if (!workspace) return res.status(404).json({ error: "Workspace not found" });
 
-        // Security Check: Only the owner of the workspace can invite people!
         if (workspace.ownerId.toString() !== req.user.userId) {
             return res.status(403).json({ error: "Only the workspace owner can invite members" });
         }
 
-        // 2. Look up the user by their email
         const userToInvite = await User.findOne({ email });
         if (!userToInvite) return res.status(404).json({ error: "User not found. Tell them to register first!" });
 
-        // 3. Prevent duplicate invites
         if (workspace.members.includes(userToInvite._id)) {
             return res.status(400).json({ error: "User is already in this workspace" });
         }
 
-        // 4. Add them to the team!
         workspace.members.push(userToInvite._id);
         await workspace.save();
-
         res.status(200).json({ message: `Successfully added ${userToInvite.name} to the workspace!` });
     } catch (error) {
         res.status(500).json({ error: "Failed to invite teammate" });
     }
 });
 
-// 1. Get a specific meeting
-app.get('/api/meetings/:id', authenticateToken, async (req, res) => {
-    try {
-        const meeting = await Meeting.findById(req.params.id);
-        if (!meeting) return res.status(404).json({ error: "Meeting not found" });
-        res.status(200).json(meeting);
-    } catch (error) {
-        res.status(500).json({ error: "Failed to fetch meeting" });
-    }
-});
+// --- MEETING ROUTES ---
 
-// 2. Get meetings (Filtered by the currently selected Workspace)
 app.get('/api/meetings', authenticateToken, async (req, res) => {
     try {
         const { workspaceId } = req.query;
-
-        // If the Frontend specifically asks for a workspace, only fetch those meetings!
         if (workspaceId) {
             const meetings = await Meeting.find({ workspaceId: workspaceId }).sort({ createdAt: -1 });
             return res.status(200).json(meetings);
         }
-
-        // Fallback: If no workspace is selected, just grab everything
         const userWorkspaces = await Workspace.find({ members: req.user.userId });
         const workspaceIds = userWorkspaces.map(ws => ws._id);
         const meetings = await Meeting.find({ workspaceId: { $in: workspaceIds } }).sort({ createdAt: -1 });
@@ -196,18 +168,14 @@ app.get('/api/meetings', authenticateToken, async (req, res) => {
     }
 });
 
-// 3. Create a new meeting in this user's workspace
 app.post('/api/meetings', authenticateToken, async (req, res) => {
     try {
         const userWorkspace = await Workspace.findOne({ members: req.user.userId });
-        
         const newMeeting = new Meeting({ 
             title: req.body.title, 
             agenda: req.body.agenda,
-            // Prioritize the frontend's active workspace, but fallback to the default!
             workspaceId: req.body.workspaceId || userWorkspace._id 
         });
-        
         const savedMeeting = await newMeeting.save(); 
         res.status(201).json(savedMeeting);
     } catch (error) {
@@ -215,91 +183,172 @@ app.post('/api/meetings', authenticateToken, async (req, res) => {
     }
 });
 
-// 4. Get all replies for a meeting
-app.get('/api/replies/:meetingId', authenticateToken, async (req, res) => {
+app.get('/api/meetings/:id', authenticateToken, async (req, res) => {
     try {
-        const replies = await Reply.find({ meetingId: req.params.meetingId }).sort({ createdAt: -1 });
-        res.status(200).json(replies);
+        const meeting = await Meeting.findById(req.params.id);
+        // We also pass the Workspace back so the frontend can check who the owner is!
+        const workspace = await Workspace.findById(meeting.workspaceId);
+        const replies = await Reply.find({ meetingId: req.params.id }).sort({ createdAt: -1 });
+        res.status(200).json({ meeting, replies, workspace });
     } catch (error) {
-        res.status(500).json({ error: "Failed to fetch replies" });
+        res.status(500).json({ error: "Failed to fetch meeting details" });
     }
 });
 
-// --- THE AI VIDEO UPLOAD PIPELINE ---
-const upload = multer({ storage: multer.memoryStorage() });
-
-app.post('/api/replies', upload.single('video'), async (req, res) => {
+// NEW: Close a Meeting
+app.put('/api/meetings/:id/close', authenticateToken, async (req, res) => {
     try {
-        const { meetingId } = req.body;
-        const file = req.file; 
+        const meeting = await Meeting.findById(req.params.id);
+        if (!meeting) return res.status(404).json({ error: "Meeting not found" });
 
-        if (!file) return res.status(400).json({ error: 'No video file provided' });
+        const workspace = await Workspace.findById(meeting.workspaceId);
+        if (workspace.ownerId.toString() !== req.user.userId) {
+            return res.status(403).json({ error: "Only the workspace owner can close meetings" });
+        }
 
-        console.log("1. Video Caught! Uploading to Cloudinary...");
-
-        let uploadFromBuffer = (req) => {
-            return new Promise((resolve, reject) => {
-                let cld_upload_stream = cloudinary.uploader.upload_stream(
-                    { resource_type: "video", folder: "silent-meeting" },
-                    (error, result) => {
-                        if (result) resolve(result);
-                        else reject(error);
-                    }
-                );
-                streamifier.createReadStream(req.file.buffer).pipe(cld_upload_stream);
-            });
-        };
-        const result = await uploadFromBuffer(req);
-        console.log("2. Cloudinary Upload complete!");
-
-        console.log("3. Passing video to Groq AI (Whisper) for transcription...");
-        const tempFilePath = path.join(__dirname, `temp_${Date.now()}.webm`);
-        fs.writeFileSync(tempFilePath, file.buffer);
-
-        const transcription = await groq.audio.transcriptions.create({
-            file: fs.createReadStream(tempFilePath),
-            model: "whisper-large-v3",
-            response_format: "text"
-        });
+        meeting.status = "Closed";
+        await meeting.save();
         
-        fs.unlinkSync(tempFilePath); 
-        console.log("Transcript generated!");
+        io.to(req.params.id).emit('meeting_closed', meeting);
+        res.status(200).json(meeting);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to close meeting" });
+    }
+});
 
-        console.log("4. Passing transcript to Llama-3 for summarization...");
-        const completion = await groq.chat.completions.create({
+// NEW: RAG AI Chatbot Route!
+app.post('/api/meetings/:id/chat', authenticateToken, async (req, res) => {
+    try {
+        const { message } = req.body;
+        if (!message) return res.status(400).json({ error: "Message is required" });
+
+        // 1. RETRIEVAL: Fetch every single video reply from this meeting
+        const replies = await Reply.find({ meetingId: req.params.id });
+        
+        // 2. AUGMENTATION: Glue all the video transcripts together into one giant String!
+        const allTranscripts = replies
+            .filter(r => r.transcript) // Only grab videos that successfully generated text
+            .map(r => r.transcript)
+            .join('\n\n---\n\n');
+
+        if (!allTranscripts) {
+            return res.status(200).json({ answer: "There are no video transcripts in this meeting yet for me to read!" });
+        }
+
+        // 3. GENERATION: Send the giant String and the User's question to Groq!
+         const chatCompletion = await groq.chat.completions.create({
             messages: [
                 { 
-                    role: "system", 
-                    content: "You are an executive assistant. Read this meeting transcript and output exactly 3 things: 1. A 1-sentence summary. 2. A bulleted list of Decisions. 3. A bulleted list of Action Items. Keep it extremely short and professional." 
+                  role: "system", 
+                  content: `You are a strict, highly accurate AI Executive Assistant. Use ONLY the following meeting transcripts. When drafting emails or listing action items, you MUST explicitly include the names of the assignees exactly as they appear in the transcript. Do not make assumptions about who the client is, use generic placeholders like [Client Name] if it is not explicitly stated.\n\nTranscripts:\n${allTranscripts}` 
                 },
-                { role: "user", content: transcription }
+                { 
+                  role: "user", 
+                  content: message 
+                }
             ],
             model: "llama-3.3-70b-versatile",
         });
 
-        const transcriptText = completion.choices[0].message.content;
-        console.log("5. AI Analysis complete!\n", transcriptText);
-
-        const newReply = new Reply({
-            meetingId: meetingId,
-            videoUrl: result.secure_url,
-            transcript: transcriptText 
-        });
-
-        await newReply.save();
-        
-        // Push over WebSocket
-        io.to(meetingId).emit('newReply', newReply);
-
-        res.status(201).json(newReply);
+        // 4. Send the AI's answer back to the frontend!
+        const aiAnswer = chatCompletion.choices[0]?.message?.content || "Sorry, I couldn't process that.";
+        res.status(200).json({ answer: aiAnswer });
 
     } catch (error) {
-        console.error("Upload error:", error);
+        console.error("Chatbot Error:", error);
+        res.status(500).json({ error: "Failed to generate AI response" });
+    }
+});
+
+// --- REPLY (VIDEO) ROUTES ---
+
+app.post('/api/replies', authenticateToken, upload.single('video'), async (req, res) => {
+    if (!req.file) return res.status(400).json({ error: "No video file provided" });
+
+    try {
+        const uploadStream = cloudinary.uploader.upload_stream(
+            { resource_type: "video", folder: "silent-meetings" },
+            async (error, result) => {
+                if (error) return res.status(500).json({ error: "Cloudinary upload failed" });
+
+                const tempFilePath = `./temp_${Date.now()}.webm`;
+                fs.writeFileSync(tempFilePath, req.file.buffer);
+
+                let transcriptText = "";
+                let summaryText = "No summary available.";
+
+                try {
+                    const transcription = await groq.audio.transcriptions.create({
+                        file: fs.createReadStream(tempFilePath),
+                        model: "whisper-large-v3",
+                        response_format: "json",
+                    });
+                    transcriptText = transcription.text;
+                    
+                    if (transcriptText) {
+                        const chatCompletion = await groq.chat.completions.create({
+                            messages: [
+                                { role: "system", content: "You are an AI assistant. Summarize the following meeting transcript in 1 sentence. Then list any action items." },
+                                { role: "user", content: transcriptText }
+                            ],
+                            model: "llama-3.3-70b-versatile",
+                        });
+                        summaryText = chatCompletion.choices[0]?.message?.content || summaryText;
+                    }
+                } catch (aiError) {
+                    console.error("AI Processing Error:", aiError);
+                    summaryText = "AI Processing failed.";
+                }
+
+                if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+
+                // Update: We now save the userId and public_id!
+                const newReply = new Reply({
+                    meetingId: req.body.meetingId,
+                    userId: req.user.userId,
+                    videoUrl: result.secure_url,
+                    public_id: result.public_id,
+                    transcript: transcriptText,
+                    textContent: summaryText
+                });
+                await newReply.save();
+
+                io.to(req.body.meetingId).emit('new_reply', newReply);
+                res.status(201).json(newReply);
+            }
+        );
+        streamifier.createReadStream(req.file.buffer).pipe(uploadStream);
+    } catch (error) {
         res.status(500).json({ error: "Failed to upload video" });
     }
 });
 
-// Call server.listen so WebSockets work
+// NEW: Delete a Video
+app.delete('/api/replies/:id', authenticateToken, async (req, res) => {
+    try {
+        const reply = await Reply.findById(req.params.id);
+        if (!reply) return res.status(404).json({ error: "Reply not found" });
+
+        // Security check: Only the person who recorded the video can delete it!
+        if (reply.userId.toString() !== req.user.userId) {
+            return res.status(403).json({ error: "You can only delete your own videos" });
+        }
+
+        // Delete from Cloudinary to save money!
+        if (reply.public_id) {
+            await cloudinary.uploader.destroy(reply.public_id, { resource_type: 'video' });
+        }
+
+        // Delete from MongoDB
+        await Reply.findByIdAndDelete(req.params.id);
+
+        io.to(reply.meetingId.toString()).emit('reply_deleted', req.params.id);
+        res.status(200).json({ message: "Video deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to delete video" });
+    }
+});
+
 server.listen(PORT, () => {
     console.log(`Server is running live on http://localhost:${PORT}`);
 });
