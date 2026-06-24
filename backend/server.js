@@ -2,6 +2,10 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config(); 
+const multer = require('multer');
+const streamifier = require('streamifier');
+const cloudinary = require('./cloudinaryConfig');
+const Reply = require('./models/Reply'); 
 const Meeting = require('./models/Meeting');
 
 const app = express();
@@ -59,6 +63,60 @@ app.get('/api/meetings', async (req, res) => {
         res.status(500).json({ error: "Failed to fetch meetings" });
     }
 });
+
+
+const upload = multer({ storage: multer.memoryStorage() });
+
+app.get('/api/replies/:meetingId', async (req, res) => {
+    try {
+        const replies = await Reply.find({ meetingId: req.params.meetingId }).sort({ createdAt: -1 });
+        res.status(200).json(replies);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to fetch replies" });
+    }
+});
+
+app.post('/api/replies', upload.single('video'), async (req, res) => {
+    try {
+        const { meetingId } = req.body;
+        const file = req.file; // 
+
+        if (!file) {
+            return res.status(400).json({ error: 'No video file provided' });
+        }
+
+        console.log("Catching video... Uploading to Cloudinary (this takes a few seconds)...");
+
+        let uploadFromBuffer = (req) => {
+            return new Promise((resolve, reject) => {
+                let cld_upload_stream = cloudinary.uploader.upload_stream(
+                    { resource_type: "video", folder: "silent-meeting" },
+                    (error, result) => {
+                        if (result) resolve(result);
+                        else reject(error);
+                    }
+                );
+                streamifier.createReadStream(req.file.buffer).pipe(cld_upload_stream);
+            });
+        };
+
+        const result = await uploadFromBuffer(req);
+        console.log("✅ Upload complete! Cloud URL:", result.secure_url);
+
+        const newReply = new Reply({
+            meetingId: meetingId,
+            videoUrl: result.secure_url
+     });
+
+        await newReply.save();
+        res.status(201).json(newReply);
+
+    } catch (error) {
+        console.error("Upload error:", error);
+        res.status(500).json({ error: "Failed to upload video" });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running live on http://localhost:${PORT}`);
 });
