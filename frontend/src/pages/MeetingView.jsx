@@ -46,6 +46,17 @@ function MeetingView() {
                   controls 
                   style={{ width: '100%', borderRadius: '8px' }}
                 />
+                
+                {/* Paint the Groq AI Summary if it exists! */}
+                {reply.transcript && (
+                  <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: 'rgba(192, 132, 252, 0.1)', borderRadius: '8px', borderLeft: '3px solid #c084fc' }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: '#c084fc' }}>✨ AI Summary</h4>
+                    <p style={{ whiteSpace: 'pre-wrap', margin: 0, fontSize: '0.95rem', lineHeight: '1.5' }}>
+                      {reply.transcript}
+                    </p>
+                  </div>
+                )}
+
                 <p className="date-text" style={{ marginTop: '0.5rem' }}>
                   Posted on {new Date(reply.createdAt).toLocaleString()}
                 </p>
