@@ -11,11 +11,14 @@ function MeetingView() {
   const [isRecording, setIsRecording] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   
-  // Chatbot State
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const [isChatting, setIsChatting] = useState(false);
   const chatScrollRef = useRef(null);
+
+  const [comments, setComments] = useState({}); 
+  const [newCommentText, setNewCommentText] = useState({}); 
+  const [activeReplyBox, setActiveReplyBox] = useState(null); 
 
   const mediaRecorderRef = useRef(null);
   const videoChunksRef = useRef([]);
@@ -35,6 +38,16 @@ function MeetingView() {
         setMeeting(data.meeting);
         setReplies(data.replies);
         setWorkspace(data.workspace);
+
+        data.replies.forEach(reply => {
+            fetch(`http://localhost:5000/api/comments/${reply._id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(r => r.json())
+            .then(cData => {
+                setComments(prev => ({ ...prev, [reply._id]: cData }));
+            });
+        });
       });
 
     const newSocket = io('http://localhost:5000');
@@ -53,10 +66,16 @@ function MeetingView() {
       setMeeting(updatedMeeting);
     });
 
+    newSocket.on('new_comment', (newComment) => {
+        setComments(prev => ({
+            ...prev,
+            [newComment.replyId]: [...(prev[newComment.replyId] || []), newComment]
+        }));
+    });
+
     return () => newSocket.disconnect();
   }, [id]);
 
-  // Auto-scroll chatbot to the bottom when new messages arrive
   useEffect(() => {
     if (chatScrollRef.current) {
         chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
@@ -133,16 +152,14 @@ function MeetingView() {
     });
   };
 
-  // CHATBOT SUBMIT FUNCTION
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
 
-    // Show the user's message instantly
     const userMessage = { role: 'user', text: chatInput };
     setChatMessages((prev) => [...prev, userMessage]);
     setChatInput('');
-    setIsChatting(true); // Shows the "Thinking..." indicator
+    setIsChatting(true); 
 
     const token = localStorage.getItem('token');
     const response = await fetch(`http://localhost:5000/api/meetings/${id}/chat`, {
@@ -163,6 +180,25 @@ function MeetingView() {
     setIsChatting(false);
   };
 
+  const handlePostComment = async (replyId, parentCommentId = null) => {
+      const textKey = parentCommentId ? parentCommentId : replyId;
+      const text = newCommentText[textKey];
+      if (!text || !text.trim()) return;
+
+      const token = localStorage.getItem('token');
+      await fetch('http://localhost:5000/api/comments', {
+          method: 'POST',
+          headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}` 
+          },
+          body: JSON.stringify({ replyId, text, parentCommentId })
+      });
+
+      setNewCommentText(prev => ({ ...prev, [textKey]: '' }));
+      if (parentCommentId) setActiveReplyBox(null);
+  };
+
   if (!meeting) return <div className="app-container"><p>Loading Meeting...</p></div>;
 
   return (
@@ -173,7 +209,6 @@ function MeetingView() {
 
       <div style={{ display: 'flex', gap: '2rem' }}>
         
-        {/* Left Column: Meeting Details & Replies */}
         <div style={{ flex: 2 }}>
           <div className="glass-panel" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
@@ -198,56 +233,105 @@ function MeetingView() {
                 
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                   <span className="date-text">{new Date(reply.createdAt).toLocaleString()}</span>
-                  
                   {reply.userId === user.id && (
-                    <button 
-                      onClick={() => handleDeleteVideo(reply._id)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}
-                      title="Delete Video"
-                    >
-                      🗑️
-                    </button>
+                    <button onClick={() => handleDeleteVideo(reply._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }} title="Delete Video">🗑️</button>
                   )}
                 </div>
 
                 <video src={reply.videoUrl} controls style={{ width: '100%', borderRadius: '8px', marginBottom: '1rem' }} />
                 
-                <div className="ai-summary-box">
-                  <h4 style={{ color: '#10b981', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    ✨ AI Summary
-                  </h4>
+                <div className="ai-summary-box" style={{ marginBottom: '1rem' }}>
+                  <h4 style={{ color: '#10b981', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>✨ AI Summary</h4>
                   <p>{reply.textContent}</p>
                 </div>
+
+                {/* THREADED COMMENTS UI */}
+                <div style={{ backgroundColor: '#0f172a', padding: '1rem', borderRadius: '8px' }}>
+                    <h4 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '0.5rem' }}>Discussion</h4>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+                        {(comments[reply._id] || []).filter(c => !c.parentCommentId).map(comment => (
+                            <div key={comment._id} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                
+                                {/* THE UPDATED PARENT COMMENT WITH CSS FIX */}
+                                <div style={{ backgroundColor: '#1e293b', padding: '0.5rem 0.75rem', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div>
+                                        <strong style={{ color: '#c084fc', fontSize: '0.85rem' }}>{comment.userName}: </strong>
+                                        <span style={{ fontSize: '0.9rem', color: '#e2e8f0' }}>{comment.text}</span>
+                                    </div>
+                                    <button 
+                                        onClick={() => setActiveReplyBox(activeReplyBox === comment._id ? null : comment._id)}
+                                        style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '0.75rem', cursor: 'pointer', padding: '0.25rem 0.5rem', borderRadius: '4px' }}
+                                        onMouseOver={(e) => e.target.style.color = '#c084fc'}
+                                        onMouseOut={(e) => e.target.style.color = '#94a3b8'}
+                                    >
+                                        Reply
+                                    </button>
+                                </div>
+
+                                {(comments[reply._id] || []).filter(c => c.parentCommentId === comment._id).map(nestedReply => (
+                                    <div key={nestedReply._id} style={{ backgroundColor: '#1e293b', padding: '0.5rem 0.75rem', borderRadius: '6px', marginLeft: '2rem', borderLeft: '2px solid #334155' }}>
+                                        <strong style={{ color: '#10b981', fontSize: '0.85rem' }}>{nestedReply.userName}: </strong>
+                                        <span style={{ fontSize: '0.9rem', color: '#e2e8f0' }}>{nestedReply.text}</span>
+                                    </div>
+                                ))}
+
+                                {activeReplyBox === comment._id && (
+                                    <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '2rem', marginTop: '0.25rem' }}>
+                                        <input 
+                                            type="text" 
+                                            className="glass-input" 
+                                            placeholder={`Reply to ${comment.userName}...`} 
+                                            style={{ flex: 1, padding: '0.4rem', fontSize: '0.85rem', margin: 0 }}
+                                            value={newCommentText[comment._id] || ''}
+                                            onChange={(e) => setNewCommentText(prev => ({ ...prev, [comment._id]: e.target.value }))}
+                                            onKeyDown={(e) => { if (e.key === 'Enter') handlePostComment(reply._id, comment._id); }}
+                                        />
+                                        <button className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }} onClick={() => handlePostComment(reply._id, comment._id)}>
+                                            Send
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <input 
+                            type="text" 
+                            className="glass-input" 
+                            placeholder="Write a comment..." 
+                            style={{ flex: 1, padding: '0.5rem', fontSize: '0.9rem', margin: 0 }}
+                            value={newCommentText[reply._id] || ''}
+                            onChange={(e) => setNewCommentText(prev => ({ ...prev, [reply._id]: e.target.value }))}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handlePostComment(reply._id, null); }}
+                        />
+                        <button className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }} onClick={() => handlePostComment(reply._id, null)}>
+                            Comment
+                        </button>
+                    </div>
+                </div>
+
               </div>
             ))}
             {replies.length === 0 && <p style={{ color: '#94a3b8' }}>No replies yet. Be the first to speak!</p>}
           </div>
         </div>
 
-        {/* Right Column: Recorder & AI Chatbot */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          
           {meeting.status === 'Open' ? (
             <div className="glass-panel" style={{ position: 'sticky', top: '2rem' }}>
               <h3 style={{ marginBottom: '1rem' }}>Record a Reply</h3>
-              
               <div className="video-preview-container" style={{ marginBottom: '1rem', background: '#0f172a', borderRadius: '8px', overflow: 'hidden' }}>
                 <video ref={videoPreviewRef} autoPlay muted style={{ width: '100%', display: isRecording ? 'block' : 'none' }} />
                 {!isRecording && <div style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>Camera Off</div>}
               </div>
-
               {isUploading ? (
-                <button className="btn-primary" disabled style={{ width: '100%', opacity: 0.7 }}>
-                  ⏳ AI is analyzing video...
-                </button>
+                <button className="btn-primary" disabled style={{ width: '100%', opacity: 0.7 }}>⏳ AI is analyzing video...</button>
               ) : isRecording ? (
-                <button onClick={stopRecording} className="btn-primary" style={{ width: '100%', backgroundColor: '#ef4444' }}>
-                  ⏹ Stop & Upload
-                </button>
+                <button onClick={stopRecording} className="btn-primary" style={{ width: '100%', backgroundColor: '#ef4444' }}>⏹ Stop & Upload</button>
               ) : (
-                <button onClick={startRecording} className="btn-primary" style={{ width: '100%' }}>
-                  ▶️ Start Camera
-                </button>
+                <button onClick={startRecording} className="btn-primary" style={{ width: '100%' }}>▶️ Start Camera</button>
               )}
             </div>
           ) : (
@@ -257,54 +341,22 @@ function MeetingView() {
              </div>
           )}
 
-          {/* NEW: THE AI CHATBOT UI */}
           <div className="glass-panel ai-summary-sidebar" style={{ display: 'flex', flexDirection: 'column', height: '400px', position: 'sticky', top: meeting.status === 'Open' ? '30rem' : '15rem' }}>
-            <h3 style={{ marginBottom: '1rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              ✨ Meeting Chatbot
-            </h3>
-            
+            <h3 style={{ marginBottom: '1rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>✨ Meeting Chatbot</h3>
             <div ref={chatScrollRef} style={{ flex: 1, overflowY: 'auto', marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem', paddingRight: '0.5rem' }}>
               {chatMessages.map((msg, idx) => (
-                <div key={idx} style={{ 
-                    alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                    backgroundColor: msg.role === 'user' ? '#c084fc' : '#1e293b',
-                    padding: '0.75rem 1rem',
-                    borderRadius: '12px',
-                    maxWidth: '85%',
-                    color: 'white',
-                    border: msg.role === 'ai' ? '1px solid rgba(255,255,255,0.1)' : 'none'
-                }}>
+                <div key={idx} style={{ alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start', backgroundColor: msg.role === 'user' ? '#c084fc' : '#1e293b', padding: '0.75rem 1rem', borderRadius: '12px', maxWidth: '85%', color: 'white', border: msg.role === 'ai' ? '1px solid rgba(255,255,255,0.1)' : 'none' }}>
                   <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.4' }}>{msg.text}</p>
                 </div>
               ))}
-              {chatMessages.length === 0 && (
-                <p style={{ color: '#94a3b8', textAlign: 'center', marginTop: '2rem', fontSize: '0.9rem' }}>
-                  Ask me anything about this meeting!
-                </p>
-              )}
-              {isChatting && (
-                <div style={{ alignSelf: 'flex-start', backgroundColor: '#1e293b', padding: '0.75rem 1rem', borderRadius: '12px', color: '#94a3b8', fontSize: '0.9rem' }}>
-                  Thinking...
-                </div>
-              )}
+              {chatMessages.length === 0 && <p style={{ color: '#94a3b8', textAlign: 'center', marginTop: '2rem', fontSize: '0.9rem' }}>Ask me anything about this meeting!</p>}
+              {isChatting && <div style={{ alignSelf: 'flex-start', backgroundColor: '#1e293b', padding: '0.75rem 1rem', borderRadius: '12px', color: '#94a3b8', fontSize: '0.9rem' }}>Thinking...</div>}
             </div>
-
             <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '0.5rem' }}>
-              <input 
-                type="text" 
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Ask a question..."
-                className="glass-input"
-                style={{ flex: 1, padding: '0.5rem', margin: 0 }}
-                disabled={isChatting}
-              />
-              <button type="submit" className="btn-primary" style={{ padding: '0.5rem 1rem' }} disabled={isChatting}>
-                Send
-              </button>
+              <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Ask a question..." className="glass-input" style={{ flex: 1, padding: '0.5rem', margin: 0 }} disabled={isChatting} />
+              <button type="submit" className="btn-primary" style={{ padding: '0.5rem 1rem' }} disabled={isChatting}>Send</button>
             </form>
           </div>
-
         </div>
       </div>
     </div>
