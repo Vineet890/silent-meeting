@@ -16,6 +16,7 @@ export default function MeetingView({ isDarkMode, toggleDarkMode }) {
   const [replies, setReplies] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [recordingMode, setRecordingMode] = useState(null);
   
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
@@ -122,9 +123,65 @@ export default function MeetingView({ isDarkMode, toggleDarkMode }) {
 
       mediaRecorder.start();
       setIsRecording(true);
+      setRecordingMode('camera');
     } catch (err) {
       console.error("Camera access denied", err);
       alert("Microphone & Camera access is required!");
+    }
+  };
+
+  const startScreenRecording = async () => {
+    try {
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: "always" }, audio: true });
+      
+      // Try to get microphone audio to mix in
+      let audioStream = null;
+      try {
+        audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (e) {
+        console.log("No mic audio, using screen audio only");
+      }
+
+      // Combine screen video with mic audio if available
+      let combinedStream;
+      if (audioStream) {
+        const tracks = [...screenStream.getVideoTracks(), ...audioStream.getAudioTracks()];
+        // Also include system audio if the screen share provided it
+        const screenAudioTracks = screenStream.getAudioTracks();
+        if (screenAudioTracks.length > 0) tracks.push(...screenAudioTracks);
+        combinedStream = new MediaStream(tracks);
+      } else {
+        combinedStream = screenStream;
+      }
+
+      if (videoPreviewRef.current) videoPreviewRef.current.srcObject = combinedStream;
+
+      const mediaRecorder = new MediaRecorder(combinedStream);
+      mediaRecorderRef.current = mediaRecorder;
+      videoChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) videoChunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const videoBlob = new Blob(videoChunksRef.current, { type: 'video/webm' });
+        await uploadVideo(videoBlob);
+      };
+
+      // Auto-stop if user clicks browser's "Stop sharing" button
+      screenStream.getVideoTracks()[0].onended = () => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+          stopRecording();
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingMode('screen');
+    } catch (err) {
+      console.error("Screen sharing denied", err);
+      // User cancelled the screen share picker - do nothing
     }
   };
 
@@ -132,6 +189,7 @@ export default function MeetingView({ isDarkMode, toggleDarkMode }) {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      setRecordingMode(null);
       const stream = videoPreviewRef.current?.srcObject;
       if (stream) {
           const tracks = stream.getTracks();
@@ -145,6 +203,7 @@ export default function MeetingView({ isDarkMode, toggleDarkMode }) {
       mediaRecorderRef.current.onstop = null; 
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      setRecordingMode(null);
       const stream = videoPreviewRef.current?.srcObject;
       if (stream) {
           const tracks = stream.getTracks();
@@ -371,6 +430,8 @@ export default function MeetingView({ isDarkMode, toggleDarkMode }) {
                 cancelRecording={cancelRecording}
                 stopRecording={stopRecording}
                 startRecording={startRecording}
+                startScreenRecording={startScreenRecording}
+                recordingMode={recordingMode}
             />
 
             <SyncIntelligenceChat 
