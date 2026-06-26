@@ -6,6 +6,7 @@ import LoginView from './pages/LoginView';
 import TeamView from './pages/TeamView';
 import SettingsView from './pages/SettingsView';
 import LandingView from './pages/LandingView';
+import HomeView from './pages/HomeView';
 import ProtectedLayout from './components/layout/ProtectedLayout';
 import './index.css';
 
@@ -36,7 +37,13 @@ function App() {
         
         <Route 
           path="/" 
-          element={ isAuthenticated ? <Navigate to="/dashboard" /> : <LandingView /> } 
+          element={
+            isAuthenticated ? 
+            <ProtectedLayout activeWorkspace={activeWorkspace} setActiveWorkspace={setActiveWorkspace} isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode}>
+              <HomeView activeWorkspace={activeWorkspace} setActiveWorkspace={setActiveWorkspace} />
+            </ProtectedLayout> 
+            : <LandingView />
+          } 
         />
 
         <Route 
