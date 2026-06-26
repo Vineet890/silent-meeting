@@ -62,139 +62,149 @@ function HomeView({ activeWorkspace }) {
   const activeInvites = activeWorkspace?.pendingInvites || [];
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <div className="px-6 py-10 md:px-12 max-w-7xl mx-auto w-full">
-          
-          <div className="mb-12">
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-2">Good morning, {user.name?.split(' ')[0] || 'there'}.</h1>
-            <p className="text-lg text-muted-foreground">Here's what's happening in <span className="font-semibold text-foreground">{activeWorkspace?.name || 'your workspace'}</span>.</p>
+    <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
+      
+      {/* IMMERSIVE HERO SECTION */}
+      <div className="relative w-full pt-20 pb-28 flex flex-col items-center justify-center overflow-hidden">
+          {/* Animated Background Blobs */}
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full mix-blend-multiply filter blur-[128px] opacity-70 animate-blob"></div>
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-indigo-500/20 rounded-full mix-blend-multiply filter blur-[128px] opacity-70 animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-32 left-1/2 -translate-x-1/2 w-[40rem] h-96 bg-fuchsia-500/20 rounded-full mix-blend-multiply filter blur-[128px] opacity-50 animate-blob animation-delay-4000"></div>
+
+          <div className="relative z-10 max-w-3xl w-full px-6 text-center flex flex-col items-center">
+              <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-4 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+                Good morning, {user.name?.split(' ')[0] || 'there'}.
+              </h1>
+              <p className="text-xl text-muted-foreground mb-12 max-w-xl">
+                Ready to sync with <span className="font-semibold text-foreground">{activeWorkspace?.name || 'your team'}</span>? Start a new thread below.
+              </p>
+
+              {/* CENTERED FLOATING COMPOSER */}
+              {activeWorkspace && user.id === activeWorkspace.ownerId && (
+              <form onSubmit={handleCreateMeeting} className="w-full relative group">
+                  <div className="absolute -inset-1.5 rounded-[2rem] bg-gradient-to-r from-primary/40 via-indigo-500/40 to-fuchsia-500/40 opacity-30 blur-xl transition-all duration-500 group-hover:opacity-60 group-hover:duration-200"></div>
+                  <div className="relative flex flex-col bg-white/80 dark:bg-black/60 backdrop-blur-2xl p-2 rounded-[2rem] border border-white/20 dark:border-white/10 shadow-2xl transition-all">
+                      <input 
+                          type="text" 
+                          placeholder="What do you want to discuss? (e.g., Q3 Marketing Sync)" 
+                          className="w-full h-16 bg-transparent px-6 text-lg font-semibold outline-none placeholder:text-muted-foreground/50 border-b border-transparent focus:border-border transition-colors" 
+                          value={newMeetingTitle} 
+                          onChange={(e) => setNewMeetingTitle(e.target.value)} 
+                          required 
+                      />
+                      
+                      {/* Agenda field appears smoothly */}
+                      <div className="px-2 pt-2 pb-2">
+                        <textarea 
+                            placeholder="Add an agenda, context, or key questions to answer..." 
+                            className="w-full min-h-[80px] bg-black/5 dark:bg-white/5 rounded-xl px-4 py-3 text-base outline-none placeholder:text-muted-foreground/50 resize-y focus:bg-black/10 dark:focus:bg-white/10 transition-colors" 
+                            value={newMeetingAgenda} 
+                            onChange={(e) => setNewMeetingAgenda(e.target.value)} 
+                            required 
+                        />
+                      </div>
+                      
+                      <div className="flex justify-between items-center px-4 pb-2 pt-2">
+                          <div className="flex gap-2">
+                              {/* Quick Action Pills instead of a massive box */}
+                              <button type="button" onClick={() => navigate('/team')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/5 dark:bg-white/5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                                  Invite Team
+                              </button>
+                              <button type="button" onClick={() => navigate('/dashboard')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/5 dark:bg-white/5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                                  Search
+                              </button>
+                          </div>
+
+                          <button type="submit" className="inline-flex items-center justify-center h-12 px-8 text-sm font-bold transition-all rounded-full shadow-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95 group/btn">
+                              Create Thread
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ml-2 group-hover/btn:translate-x-1 transition-transform"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                          </button>
+                      </div>
+                  </div>
+              </form>
+              )}
           </div>
+      </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            {/* LEFT COLUMN: Actions & Activity */}
-            <div className="lg:col-span-2 space-y-12">
-                
-                {/* CREATE THREAD WIDGET */}
-                {activeWorkspace && user.id === activeWorkspace.ownerId && (
-                <div className="relative group">
-                    <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-primary/30 to-indigo-500/30 opacity-20 blur-xl transition-opacity group-hover:opacity-40"></div>
-                    <div className="relative flex flex-col bg-white/80 dark:bg-black/60 backdrop-blur-xl p-6 md:p-8 rounded-2xl border border-border/50 shadow-sm hover:shadow-md transition-all">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-bold tracking-tight text-foreground">Start a New Thread</h3>
-                            <p className="text-sm text-muted-foreground">Kick off an async discussion with your team</p>
-                        </div>
-                    </div>
-                    <form onSubmit={handleCreateMeeting} className="flex flex-col gap-4 w-full">
-                        <div className="relative">
-                            <input type="text" placeholder="Subject (e.g., Q3 Marketing Sync)" className="flex h-14 w-full rounded-xl bg-background/50 px-4 pt-1 pb-1 text-lg font-semibold outline-none placeholder:text-muted-foreground/60 border border-transparent hover:border-border focus:border-primary/50 focus:bg-background transition-all" value={newMeetingTitle} onChange={(e) => setNewMeetingTitle(e.target.value)} required />
-                        </div>
-                        <div className="relative">
-                            <textarea placeholder="Add an agenda, context, or key questions to answer..." className="flex min-h-[100px] w-full rounded-xl bg-background/50 px-4 py-3 text-base outline-none placeholder:text-muted-foreground/60 border border-transparent hover:border-border focus:border-primary/50 focus:bg-background transition-all resize-y" value={newMeetingAgenda} onChange={(e) => setNewMeetingAgenda(e.target.value)} required />
-                        </div>
-                        <div className="flex justify-end mt-2 border-t border-border/50 pt-4">
-                            <button type="submit" className="inline-flex items-center justify-center h-11 px-8 text-sm font-bold transition-all rounded-full shadow-md bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95 group/btn">
-                                Create Thread
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ml-2 group-hover/btn:translate-x-1 transition-transform"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                            </button>
-                        </div>
-                    </form>
-                    </div>
-                </div>
-                )}
-
-                {/* RECENT ACTIVITY */}
-                <div>
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-semibold tracking-tight text-foreground">Recent Threads</h3>
-                        <button onClick={() => navigate('/dashboard')} className="text-sm font-medium text-primary hover:underline flex items-center gap-1">
-                            View All <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                        </button>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {recentMeetings.map(m => (
-                            <div key={m._id} className="flex flex-col justify-between p-5 transition-all border cursor-pointer bg-white/60 backdrop-blur-md rounded-2xl shadow-sm hover:-translate-y-1 hover:shadow-md hover:border-primary/50 dark:bg-black/60 dark:border-white/5" onClick={() => navigate(`/meetings/${m._id}`)}>
-                                <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className={`inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-md ${m.status === 'Open' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-secondary text-secondary-foreground'}`}>{m.status}</span>
-                                        <span className="text-xs text-muted-foreground">{getTimeAgo(m.createdAt)}</span>
-                                    </div>
-                                    <h3 className="mb-1 text-lg font-semibold tracking-tight text-foreground line-clamp-1">{m.title}</h3>
-                                    <p className="text-sm text-muted-foreground line-clamp-2">{m.agenda || 'No agenda provided'}</p>
-                                </div>
-                            </div>
-                        ))}
-                        {recentMeetings.length === 0 && (
-                            <div className="col-span-1 md:col-span-2 p-8 text-center border-2 border-dashed rounded-2xl border-border/50">
-                                <p className="text-muted-foreground">No recent threads found in this workspace.</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-            </div>
-
-            {/* RIGHT COLUMN: Needs Attention & Quick Links */}
-            <div className="space-y-8">
-                
-                {/* NEEDS ATTENTION */}
-                <div className="p-6 rounded-2xl border bg-white/50 dark:bg-black/50 backdrop-blur-md shadow-sm">
-                    <h3 className="flex items-center gap-2 text-lg font-bold tracking-tight mb-4 text-foreground">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-orange-500"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                        Needs Attention
-                    </h3>
-                    
-                    <div className="space-y-4">
-                        {activeInvites.length > 0 ? (
-                            <div className="p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-800 dark:text-orange-200">
-                                <p className="text-sm font-medium mb-2">You have {activeInvites.length} pending invite{activeInvites.length > 1 ? 's' : ''} to join your workspace.</p>
-                                <button onClick={() => navigate('/team')} className="text-sm font-bold underline hover:text-orange-600 dark:hover:text-orange-300">Review Invites</button>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col items-center justify-center p-6 text-center">
-                                <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center mb-3 text-green-500">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                                </div>
-                                <p className="text-sm font-medium text-foreground">You're all caught up!</p>
-                                <p className="text-xs text-muted-foreground mt-1">No pending action items right now.</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* QUICK LINKS */}
-                <div className="p-6 rounded-2xl border bg-white/50 dark:bg-black/50 backdrop-blur-md shadow-sm">
-                    <h3 className="text-lg font-bold tracking-tight mb-4 text-foreground">Quick Links</h3>
-                    <div className="space-y-2">
-                        <button onClick={() => navigate('/team')} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-accent/50 transition-colors text-left group">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-primary/10 text-primary"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div>
-                                <span className="font-medium text-sm">Invite Team Members</span>
-                            </div>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"><path d="m9 18 6-6-6-6"/></svg>
-                        </button>
-                        <button onClick={() => navigate('/dashboard')} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-accent/50 transition-colors text-left group">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
-                                <span className="font-medium text-sm">Search All Threads</span>
-                            </div>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"><path d="m9 18 6-6-6-6"/></svg>
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-
+      {/* FLOATING ACTION STRIP (If there are invites) */}
+      {activeInvites.length > 0 && (
+          <div className="max-w-2xl mx-auto w-full px-6 -mt-16 mb-12 relative z-30">
+              <div className="flex items-center justify-between p-4 px-6 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-2xl shadow-orange-500/20 animate-in slide-in-from-bottom-4">
+                  <div className="flex items-center gap-3">
+                      <div className="p-1.5 bg-white/20 rounded-full backdrop-blur-md">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                      </div>
+                      <span className="font-medium text-sm md:text-base">You have {activeInvites.length} pending workspace invite{activeInvites.length > 1 ? 's' : ''}.</span>
+                  </div>
+                  <button onClick={() => navigate('/team')} className="px-4 py-2 bg-white text-orange-600 font-bold text-sm rounded-full shadow-sm hover:scale-105 active:scale-95 transition-transform">
+                      Review Now
+                  </button>
+              </div>
           </div>
+      )}
 
+      {/* HORIZONTAL SCROLLING RECENT THREADS */}
+      <div className="w-full px-6 py-12 bg-black/5 dark:bg-white/5 border-t border-border/50 flex-1">
+          <div className="max-w-7xl mx-auto w-full">
+              <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                      Jump back in
+                  </h3>
+                  <button onClick={() => navigate('/dashboard')} className="text-sm font-bold text-primary hover:text-primary/80 flex items-center gap-1 group/link">
+                      View all threads 
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover/link:translate-x-1 transition-transform"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                  </button>
+              </div>
+
+              {recentMeetings.length === 0 ? (
+                  <div className="w-full py-16 flex flex-col items-center justify-center text-center opacity-60">
+                      <div className="w-16 h-16 rounded-full bg-foreground/5 flex items-center justify-center mb-4">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+                      </div>
+                      <p className="text-lg font-medium text-foreground">No threads yet.</p>
+                      <p className="text-sm text-muted-foreground mt-1">Start a new discussion using the composer above.</p>
+                  </div>
+              ) : (
+                  <div className="flex gap-6 overflow-x-auto pb-8 snap-x snap-mandatory hide-scrollbar">
+                      {recentMeetings.map(m => (
+                          <div 
+                              key={m._id} 
+                              onClick={() => navigate(`/meetings/${m._id}`)}
+                              className="snap-start shrink-0 w-[300px] md:w-[350px] h-[220px] rounded-3xl p-6 cursor-pointer relative overflow-hidden group/card bg-white dark:bg-black border shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between"
+                          >
+                              {/* Card Glow Effect */}
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full mix-blend-multiply filter blur-2xl opacity-0 group-hover/card:opacity-100 transition-opacity duration-500"></div>
+
+                              <div>
+                                  <div className="flex items-center justify-between mb-4 relative z-10">
+                                      <span className={`inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-full ${m.status === 'Open' ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-foreground/10 text-foreground/70'}`}>
+                                          {m.status}
+                                      </span>
+                                      <span className="text-xs font-medium text-muted-foreground">{getTimeAgo(m.createdAt)}</span>
+                                  </div>
+                                  <h3 className="text-xl font-bold tracking-tight text-foreground line-clamp-2 leading-tight mb-2 relative z-10">
+                                      {m.title}
+                                  </h3>
+                                  <p className="text-sm text-muted-foreground line-clamp-2 relative z-10">
+                                      {m.agenda || 'No agenda provided'}
+                                  </p>
+                              </div>
+
+                              <div className="flex items-center text-primary text-sm font-bold opacity-0 group-hover/card:opacity-100 transition-opacity translate-y-2 group-hover/card:translate-y-0 relative z-10">
+                                  Open Thread <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+              )}
+          </div>
       </div>
       
       {/* FOOTER */}
-      <footer className="px-12 py-12 mt-auto border-t bg-muted/20">
+      <footer className="px-6 md:px-12 py-12 mt-auto border-t bg-background">
         <div className="flex flex-col items-center justify-between gap-6 mx-auto md:flex-row max-w-7xl">
           <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-muted-foreground" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
