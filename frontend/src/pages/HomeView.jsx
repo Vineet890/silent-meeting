@@ -72,7 +72,7 @@ function HomeView({ activeWorkspace }) {
           <div className="absolute -bottom-32 left-1/2 -translate-x-1/2 w-[40rem] h-96 bg-fuchsia-500/20 rounded-full mix-blend-multiply filter blur-[128px] opacity-50 animate-blob animation-delay-4000"></div>
 
           <div className="relative z-10 max-w-3xl w-full px-6 text-center flex flex-col items-center">
-              <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-4 pb-2 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+              <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-4 pb-4 leading-normal bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
                 Good morning, {user.name?.split(' ')[0] || 'there'}.
               </h1>
               <p className="text-xl text-muted-foreground mb-12 max-w-xl">
