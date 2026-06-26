@@ -90,27 +90,29 @@ function HomeView({ activeWorkspace }) {
               <form onSubmit={handleCreateMeeting} className="w-full relative group">
                   <div className="absolute -inset-1.5 rounded-[2rem] bg-gradient-to-r from-primary/40 via-indigo-500/40 to-fuchsia-500/40 opacity-30 blur-xl transition-all duration-500 group-hover:opacity-60 group-hover:duration-200"></div>
                   <div className="relative flex flex-col bg-white/80 dark:bg-black/60 backdrop-blur-2xl p-2 rounded-[2rem] border border-white/20 dark:border-white/10 shadow-2xl transition-all">
-                      <input 
-                          type="text" 
-                          placeholder="What do you want to discuss? (e.g., Q3 Marketing Sync)" 
-                          className="w-full h-16 bg-transparent px-6 text-lg font-semibold outline-none placeholder:text-muted-foreground/50 border-b border-transparent focus:border-border transition-colors" 
-                          value={newMeetingTitle} 
-                          onChange={(e) => setNewMeetingTitle(e.target.value)} 
-                          required 
-                      />
+                      <div className="px-2 pt-2 pb-1">
+                          <input 
+                              type="text" 
+                              placeholder="Title (e.g., Q3 Marketing Sync)" 
+                              className="w-full h-14 bg-black/5 dark:bg-white/5 rounded-xl px-4 text-lg font-bold outline-none placeholder:text-muted-foreground/60 focus:bg-black/10 dark:focus:bg-white/10 transition-colors" 
+                              value={newMeetingTitle} 
+                              onChange={(e) => setNewMeetingTitle(e.target.value)} 
+                              required 
+                          />
+                      </div>
                       
                       {/* Agenda field appears smoothly */}
-                      <div className="px-2 pt-2 pb-2">
+                      <div className="px-2 pt-1 pb-2">
                         <textarea 
                             placeholder="Add an agenda, context, or key questions to answer..." 
-                            className="w-full min-h-[80px] bg-black/5 dark:bg-white/5 rounded-xl px-4 py-3 text-base outline-none placeholder:text-muted-foreground/50 resize-y focus:bg-black/10 dark:focus:bg-white/10 transition-colors" 
+                            className="w-full min-h-[80px] bg-black/5 dark:bg-white/5 rounded-xl px-4 py-3 text-base outline-none placeholder:text-muted-foreground/60 resize-y focus:bg-black/10 dark:focus:bg-white/10 transition-colors" 
                             value={newMeetingAgenda} 
                             onChange={(e) => setNewMeetingAgenda(e.target.value)} 
                             required 
                         />
                       </div>
                       
-                      <div className="flex justify-between items-center px-4 pb-2 pt-2">
+                      <div className="flex justify-between items-center px-4 pb-2 pt-1">
                           <div className="flex gap-2">
                               {/* Quick Action Pills instead of a massive box */}
                               <button type="button" onClick={() => navigate('/team')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/5 dark:bg-white/5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
@@ -181,19 +183,24 @@ function HomeView({ activeWorkspace }) {
                           <div 
                               key={m._id} 
                               onClick={() => navigate(`/meetings/${m._id}`)}
-                              className="group cursor-pointer relative overflow-hidden flex flex-col justify-between h-[240px] p-6 rounded-3xl bg-white/70 dark:bg-black/60 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:bg-white/90 dark:hover:bg-black/80 transition-all duration-500 hover:-translate-y-1.5"
+                              className="group cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[260px] p-5 rounded-3xl bg-white/70 dark:bg-black/60 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:bg-white/90 dark:hover:bg-black/80 transition-all duration-500 hover:-translate-y-1.5"
                           >
                               {/* Accent Glow based on index */}
                               <div className={`absolute -top-12 -right-12 w-40 h-40 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-0 group-hover:opacity-40 transition-opacity duration-700 ${i % 2 === 0 ? 'bg-primary' : 'bg-fuchsia-500'}`}></div>
 
-                              <div>
-                                  <div className="flex items-center justify-between mb-5 relative z-10">
-                                      <span className={`inline-flex items-center px-3 py-1 text-[11px] font-black uppercase tracking-wider rounded-full ${m.status === 'Open' ? 'bg-green-500/15 text-green-700 dark:text-green-400' : 'bg-foreground/10 text-foreground/70'}`}>
+                              <div className="flex-1 flex flex-col">
+                                  {/* Placeholder Video Thumbnail for visual weight */}
+                                  <div className="w-full h-24 mb-4 rounded-2xl bg-gradient-to-br from-black/5 to-black/10 dark:from-white/5 dark:to-white/10 flex items-center justify-center relative overflow-hidden group-hover:scale-[1.02] transition-transform duration-500">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-foreground/20 group-hover:text-primary/40 transition-colors"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg>
+                                  </div>
+
+                                  <div className="flex items-center justify-between mb-3 relative z-10">
+                                      <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-md ${m.status === 'Open' ? 'bg-green-500/15 text-green-700 dark:text-green-400' : 'bg-foreground/10 text-foreground/70'}`}>
                                           {m.status}
                                       </span>
-                                      <span className="text-xs font-medium text-muted-foreground">{getTimeAgo(m.createdAt)}</span>
+                                      <span className="text-[11px] font-bold text-muted-foreground">{getTimeAgo(m.createdAt)}</span>
                                   </div>
-                                  <h3 className="text-xl font-bold tracking-tight text-foreground line-clamp-2 leading-snug mb-3 relative z-10 group-hover:text-primary transition-colors">
+                                  <h3 className="text-lg font-bold tracking-tight text-foreground line-clamp-1 leading-snug mb-2 relative z-10 group-hover:text-primary transition-colors">
                                       {m.title}
                                   </h3>
                                   <p className="text-sm text-muted-foreground line-clamp-2 relative z-10 leading-relaxed font-medium">
