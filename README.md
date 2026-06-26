@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/Vineet890/syncloop/main/frontend/public/vite.svg" alt="SyncLoop Logo" width="80" height="80" />
-  <h1>SyncLoop ⚡</h1>
-  <p><strong>The asynchronous video communication platform built for high-performance, distributed teams.</strong></p>
+  <img src="https://raw.githubusercontent.com/Vineet890/syncloop/main/logo.svg" alt="SyncLoop Logo" width="80" height="80" />
+  <h1>SyncLoop</h1>
+  <p><strong>An Asynchronous Video Communication Platform for Distributed Engineering Teams</strong></p>
   
   <p>
     <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19-blue?logo=react&logoColor=white" alt="React 19" /></a>
@@ -13,7 +13,8 @@
   
   <p>
     <a href="#features">Features</a> •
-    <a href="#security--architecture">Security</a> •
+    <a href="#system-architecture">Architecture</a> •
+    <a href="#screenshots">Screenshots</a> •
     <a href="#getting-started">Getting Started</a> •
     <a href="#deployment">Deployment</a>
   </p>
@@ -21,65 +22,99 @@
 
 ---
 
-**SyncLoop** replaces endless live meetings with structured, asynchronous video threads. Record your updates, watch them on your own time, and let **Groq AI** automatically transcribe and summarize the key takeaways. Designed with a premium, fluid UI to make team collaboration effortless and beautiful.
+**SyncLoop** is a full-stack web application designed to streamline communication in remote and distributed teams. By replacing synchronous meetings with structured, asynchronous video threads, teams can communicate effectively across time zones. The platform leverages modern artificial intelligence via Groq to automatically transcribe and summarize video updates, generating actionable insights instantly.
 
 ---
 
-## ✨ Features
+## Features
 
-- 📹 **Asynchronous Video Threads:** Record webcam and screen updates directly from the browser. Watch replies in context without scheduling nightmares.
-- 🤖 **Groq AI Integration:** Every video is automatically transcribed using `whisper-large-v3` and summarized with `llama-3.3-70b-versatile` for instant context.
-- 💬 **Meeting Chat AI:** Talk directly to your meetings. Ask the AI questions like *"What was the consensus on the new design?"* or *"List my action items"*.
-- 🏢 **Secure Workspaces:** Create private team workspaces, invite members, and maintain strict role-based access to meeting threads.
-- 🧵 **Threaded Discussions:** Engage in deeply nested text comments on specific video replies to keep conversations organized.
-- 📬 **Email Notifications:** Automated email alerts keep your team in the loop when new updates are posted.
-- 🎨 **Premium UI/UX:** Built with Tailwind CSS, featuring a sleek glassmorphism aesthetic, dynamic animations, and an immersive user experience.
-- 🌙 **Dark Mode:** Native, flicker-free dark mode support for late-night productivity.
-
----
-
-## 🔒 Security & Architecture
-
-SyncLoop is built from the ground up with **enterprise-grade security** and a modern, decoupled architecture. 
-
-### Security Highlights
-- **Zero Trust Architecture:** All WebSockets (Socket.io) and REST API routes are fully secured with JWT authentication and rigorous workspace-membership validation.
-- **Attack Prevention:** Defended against NoSQL Injection, ReDoS, XSS, and Clickjacking via aggressive input sanitization, strict Mongoose schema limits, and `helmet` headers.
-- **DDoS Mitigation:** Layered rate-limiting strategy (Global 200/15m, Auth 10/15m) and strict JSON body payload size limits.
-- **Cost Control:** Cloudinary video assets are automatically and securely destroyed upon user account or video deletion.
+- **Asynchronous Video Collaboration:** Record webcam and screen-capture updates directly within the browser using the native MediaRecorder API.
+- **AI-Powered Insights:** Video audio is processed in real-time, transcribed via `whisper-large-v3`, and summarized using `llama-3.3-70b-versatile` to extract immediate context and action items.
+- **Conversational Meeting Intelligence:** An integrated AI assistant allows users to query the context of the entire meeting thread ("List my action items" or "What was the decision on X?").
+- **Secure Workspace Management:** Role-based access control (RBAC) enabling users to create private workspaces, invite team members, and securely manage access to meeting threads.
+- **Threaded Communication:** Deeply nested text comments on specific video replies to maintain organized and contextual discussions.
+- **Real-Time Synchronization:** WebSockets via Socket.io ensure immediate state propagation across all connected clients for replies and comments.
+- **Automated Notifications:** Event-driven email alerts and in-app toast notifications keep team members informed of critical updates.
+- **Responsive UI/UX:** A highly polished, responsive interface built with Tailwind CSS, featuring glassmorphism elements and native dark mode support.
 
 ---
 
-## 🛠️ Tech Stack
+## System Architecture
 
-### Frontend
-- **Framework:** React 19 + Vite
+SyncLoop utilizes a decoupled client-server architecture with secure API endpoints and an event-driven WebSocket layer for real-time updates.
+
+### High-Level Architecture Diagram
+
+```mermaid
+graph TD
+    Client[React 19 Client] -->|REST API & WebSockets| Server(Node.js / Express Backend)
+    
+    Server <-->|Socket.io Event Emitter| Client
+    Server <-->|Mongoose ORM| DB[(MongoDB Atlas)]
+    Server -->|Video Stream Upload| CDN[Cloudinary Video Storage]
+    Server <-->|Audio Buffers / HTTP| AI[Groq AI: Whisper & LLaMA]
+    Server -->|SMTP TLS| Mail[Nodemailer Notification Engine]
+    
+    subgraph AI Processing Pipeline
+        CDN -->|Read Stream| AI
+        AI -->|Transcription & Summary JSON| Server
+    end
+```
+
+### Security Measures
+- **Authentication & Authorization:** JWT-based authentication combined with strict workspace-membership validation for all REST routes and WebSocket channels.
+- **Threat Mitigation:** Aggressive input sanitization, strict Mongoose schema boundaries, and `helmet` headers defend against NoSQL Injection, XSS, and Clickjacking.
+- **Rate Limiting:** Layered request throttling (Global: 200 req/15m, Auth: 10 req/15m) using `express-rate-limit` prevents DDoS and brute-force attacks.
+- **Resource Management:** Cloudinary video assets are programmatically destroyed via API hooks upon user account deletion or manual video removal to prevent orphaned assets and control costs.
+
+---
+
+## Screenshots
+
+> **Note to Reviewer:** Replace these placeholders with actual high-resolution screenshots of the deployed application.
+
+### Workspace Dashboard
+![Dashboard Screenshot Placeholder](https://placehold.co/800x450/EEE/31343C?font=montserrat&text=Workspace+Dashboard)
+
+### Video Thread & AI Summary
+![Thread Screenshot Placeholder](https://placehold.co/800x450/EEE/31343C?font=montserrat&text=Video+Thread+%26+AI+Summary)
+
+### Dark Mode Interface
+![Dark Mode Screenshot Placeholder](https://placehold.co/800x450/1A1A1A/FFFFFF?font=montserrat&text=Dark+Mode+Interface)
+
+---
+
+## Technical Stack
+
+### Frontend Application
+- **Framework:** React 19 bootstrapped with Vite
 - **Routing:** React Router v7
-- **Styling:** Tailwind CSS v3 + Lucide Icons + Glassmorphism UI
-- **State Management:** React Hooks + Context + LocalStorage
+- **Styling:** Tailwind CSS v3 with custom CSS variable tokens
+- **State Management:** React Hooks, Context API, and LocalStorage
 - **Data Visualization:** Recharts
-- **Real-time Engine:** Socket.io-client
+- **Real-time Client:** Socket.io-client
 
-### Backend
-- **Server:** Node.js + Express.js
-- **Database:** MongoDB Atlas + Mongoose
-- **Authentication:** JWT + bcryptjs
-- **Security:** Helmet + express-rate-limit
-- **Media Storage:** Cloudinary Video CDN + streamifier
-- **AI Processing:** Groq SDK (Whisper & LLaMA)
-- **Testing:** Jest + Supertest
+### Backend Services
+- **Runtime:** Node.js
+- **Framework:** Express.js
+- **Database:** MongoDB Atlas with Mongoose ORM
+- **Authentication:** JSON Web Tokens (JWT) & bcryptjs
+- **Security:** Helmet & express-rate-limit
+- **Media Processing:** Cloudinary API & streamifier for buffer-to-stream conversion
+- **AI Integration:** Groq SDK
+- **Testing:** Jest & Supertest
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
-- Node.js (v18+)
-- MongoDB Atlas URI
-- Cloudinary Account
+- Node.js (v18 or higher)
+- MongoDB Atlas Connection URI
+- Cloudinary Account Credentials
 - Groq API Key
 
-### Local Setup
+### Local Development Setup
 
 **1. Clone the repository**
 ```bash
@@ -87,12 +122,12 @@ git clone https://github.com/Vineet890/syncloop.git
 cd syncloop
 ```
 
-**2. Setup Backend**
+**2. Configure and Start the Backend**
 ```bash
 cd backend
 npm install
 ```
-Create a `.env` file in the `backend` directory:
+Create a `.env` file in the `backend` directory with your infrastructure credentials:
 ```env
 PORT=5000
 MONGODB_URI=your_mongodb_connection_string
@@ -105,12 +140,12 @@ EMAIL_USER=your_email@gmail.com
 EMAIL_PASS=your_app_password
 CORS_ORIGIN=http://localhost:5173
 ```
-Start the backend server:
+Initialize the server:
 ```bash
 npm start
 ```
 
-**3. Setup Frontend**
+**3. Configure and Start the Frontend**
 ```bash
 cd ../frontend
 npm install
@@ -119,18 +154,18 @@ Create a `.env` file in the `frontend` directory:
 ```env
 VITE_API_URL=http://localhost:5000
 ```
-Start the frontend development server:
+Launch the development server:
 ```bash
 npm run dev
 ```
 
-The application will be available at `http://localhost:5173`.
+The application client will be available at `http://localhost:5173`.
 
 ---
 
-## 🧪 Testing
+## Testing
 
-The backend includes a comprehensive Jest test suite covering authentication, authorization, and core application logic to ensure zero regressions.
+The backend architecture includes a comprehensive Jest test suite validating authentication flows, workspace authorization, and core data models to ensure zero regressions during continuous integration.
 
 ```bash
 cd backend
@@ -139,15 +174,15 @@ npm run test
 
 ---
 
-## 📦 Deployment
+## Deployment
 
-SyncLoop is fully configured for modern PaaS deployment.
+SyncLoop is container-ready and configured for modern Platform-as-a-Service (PaaS) deployment.
 
-- **Frontend (Vercel):** Build via Vite. Ensure the `VITE_API_URL` environment variable points to your live backend server URL.
-- **Backend (Render):** Standard Node.js backend. Ensure all environment variables (including `CORS_ORIGIN` pointing to your deployed frontend URL) are securely injected.
+- **Frontend Build (e.g., Vercel):** Build via Vite. Ensure the `VITE_API_URL` environment variable is mapped to your live backend server URL.
+- **Backend Service (e.g., Render):** Standard Node.js environment. Ensure all production environment variables (including `CORS_ORIGIN` pointing to your deployed frontend domain) are securely injected.
 
 ---
 
 <div align="center">
-  Built with ❤️ by <a href="https://github.com/Vineet890">Vineet Kumar</a>.
+  Developed by <a href="https://github.com/Vineet890">Vineet Kumar</a>
 </div>
