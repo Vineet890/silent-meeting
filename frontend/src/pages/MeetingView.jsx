@@ -229,7 +229,14 @@ export default function MeetingView({ isDarkMode, toggleDarkMode }) {
             <span className="text-2xl font-black tracking-tighter">SyncLoop</span>
         </div>
 
-        <div className="flex items-center justify-end flex-1 gap-6">
+        <div className="flex items-center justify-end flex-1 gap-4">
+            <button 
+                onClick={() => navigate('/team')}
+                className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors rounded-full bg-primary/10 text-primary hover:bg-primary/20"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                Invite
+            </button>
             <button 
                 onClick={toggleDarkMode} 
                 className="relative flex items-center justify-center w-10 h-10 transition-all rounded-full bg-white/50 border border-black/5 hover:bg-white dark:bg-black/50 dark:border-white/10 dark:hover:bg-black/80 shadow-sm hover:shadow hover:scale-105 active:scale-95" 
