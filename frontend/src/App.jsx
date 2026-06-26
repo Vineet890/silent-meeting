@@ -62,7 +62,7 @@ function App() {
           element={
             isAuthenticated ? 
             <ProtectedLayout activeWorkspace={activeWorkspace} setActiveWorkspace={setActiveWorkspace} isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode}>
-              <TeamView activeWorkspace={activeWorkspace} />
+              <TeamView activeWorkspace={activeWorkspace} setActiveWorkspace={setActiveWorkspace} />
             </ProtectedLayout> 
             : <Navigate to="/login" />
           } 

@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { apiFetch } from '../utils/api';
 
-function TeamView({ activeWorkspace }) {
+function TeamView({ activeWorkspace, setActiveWorkspace }) {
   const [inviteEmail, setInviteEmail] = useState('');
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
   
   const handleInvite = async (e) => {
     e.preventDefault();
@@ -13,6 +14,22 @@ function TeamView({ activeWorkspace }) {
     });
     setInviteEmail('');
     alert('User invited!');
+  };
+
+  const handleRemoveMember = async (memberId) => {
+    if (!window.confirm('Are you sure you want to remove this member from the workspace?')) return;
+    const res = await apiFetch(`/api/workspaces/${activeWorkspace._id}/members/${memberId}`, {
+        method: 'DELETE'
+    });
+    if (res && res.ok) {
+        setActiveWorkspace(prev => ({
+            ...prev,
+            members: prev.members.filter(m => m._id !== memberId)
+        }));
+    } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to remove member');
+    }
   };
 
   if (!activeWorkspace) {
@@ -34,14 +51,24 @@ function TeamView({ activeWorkspace }) {
                     <h3 className="mb-6 text-xl font-semibold tracking-tight">Workspace Members</h3>
                     <div className="flex flex-col gap-3">
                         {activeWorkspace.members && activeWorkspace.members.map(member => (
-                            <div key={member._id} className="flex items-center gap-4 p-4 border rounded-xl bg-muted/20">
-                                <div className="flex items-center justify-center w-10 h-10 font-bold rounded-full bg-primary/10 text-primary">
-                                    {(member.name || member.email).charAt(0).toUpperCase()}
+                            <div key={member._id} className="flex items-center justify-between p-4 border rounded-xl bg-muted/20">
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center justify-center w-10 h-10 font-bold rounded-full bg-primary/10 text-primary">
+                                        {(member.name || member.email).charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold text-foreground">{member.name || member.email}</p>
+                                        <p className="text-sm text-muted-foreground">{member._id === activeWorkspace.ownerId ? 'Workspace Owner' : 'Member'}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="font-semibold text-foreground">{member.name || member.email}</p>
-                                    <p className="text-sm text-muted-foreground">{member._id === activeWorkspace.ownerId ? 'Workspace Owner' : 'Member'}</p>
-                                </div>
+                                {user.id === activeWorkspace.ownerId && member._id !== activeWorkspace.ownerId && (
+                                    <button 
+                                        onClick={() => handleRemoveMember(member._id)}
+                                        className="text-xs font-semibold px-3 py-1.5 rounded-md text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 border border-transparent hover:border-red-200 dark:hover:border-red-800 transition-colors"
+                                    >
+                                        Remove
+                                    </button>
+                                )}
                             </div>
                         ))}
                     </div>

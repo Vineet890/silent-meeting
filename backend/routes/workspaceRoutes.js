@@ -109,4 +109,27 @@ router.post('/:id/decline-invite', authenticateToken, async (req, res) => {
     }
 });
 
+router.delete('/:id/members/:memberId', authenticateToken, async (req, res) => {
+    try {
+        const workspace = await Workspace.findById(req.params.id);
+        if (!workspace) return res.status(404).json({ error: "Workspace not found" });
+
+        if (workspace.ownerId.toString() !== req.user.userId) {
+            return res.status(403).json({ error: "Only the owner can remove teammates." });
+        }
+
+        const memberIdToRemove = req.params.memberId;
+        if (workspace.ownerId.toString() === memberIdToRemove) {
+            return res.status(400).json({ error: "Owner cannot be removed from the workspace." });
+        }
+
+        workspace.members = workspace.members.filter(id => id.toString() !== memberIdToRemove);
+        await workspace.save();
+
+        res.status(200).json({ message: "Member removed successfully." });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to remove member" });
+    }
+});
+
 module.exports = router;
