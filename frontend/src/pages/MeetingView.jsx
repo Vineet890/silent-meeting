@@ -388,7 +388,7 @@ export default function MeetingView({ isDarkMode, toggleDarkMode }) {
       {/* PRO FOOTER */}
       <footer className="px-12 py-12 mt-auto border-t bg-muted/20">
         <div className="flex flex-col items-center justify-between gap-6 mx-auto md:flex-row max-w-7xl">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/')}>
             <LogoIcon className="text-muted-foreground w-6 h-6" />
             <span className="font-semibold text-muted-foreground">SyncLoop</span>
           </div>
