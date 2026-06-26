@@ -109,6 +109,11 @@ app.use('/api/analytics', analyticsRoutes);
 
 // Note: Global rate limiter is applied above, before routes
 
+// Health Check Endpoint (For Cron Jobs / Keep-Alive Pingers)
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
 // Global Error Handler
 app.use((err, req, res, next) => {
     console.error("Global Error Handler caught:", err.stack);
