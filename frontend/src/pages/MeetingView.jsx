@@ -249,7 +249,7 @@ export default function MeetingView({ isDarkMode, toggleDarkMode }) {
         </div>
 
         <div className="flex items-center justify-end flex-1 gap-4">
-            {workspace && workspace.ownerId === user.userId && (
+            {workspace && (workspace.ownerId === user.userId || meeting?.allowedUsers?.includes(user.userId)) && (
               <button 
                   onClick={() => setIsAccessModalOpen(true)}
                   className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors rounded-full bg-primary/10 text-primary hover:bg-primary/20"

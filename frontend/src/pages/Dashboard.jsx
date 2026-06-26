@@ -7,6 +7,7 @@ function Dashboard({ activeWorkspace }) {
   const navigate = useNavigate();
   const [meetings, setMeetings] = useState([]);
   const [newMeetingTitle, setNewMeetingTitle] = useState('');
+  const [newMeetingAgenda, setNewMeetingAgenda] = useState('');
   
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -69,7 +70,7 @@ function Dashboard({ activeWorkspace }) {
     if (!activeWorkspace) return;
     const response = await apiFetch('/api/meetings', {
       method: 'POST',
-      body: JSON.stringify({ title: newMeetingTitle, agenda: "No agenda provided", workspaceId: activeWorkspace._id })
+      body: JSON.stringify({ title: newMeetingTitle, agenda: newMeetingAgenda, workspaceId: activeWorkspace._id })
     });
     if (response && response.ok) {
         const newMeeting = await response.json();
@@ -219,9 +220,12 @@ function Dashboard({ activeWorkspace }) {
                     {activeWorkspace && user.id === activeWorkspace.ownerId && (
                     <div className="flex flex-col mb-12">
                       <h3 className="mb-4 text-xl font-semibold tracking-tight text-foreground">Start a New Discussion</h3>
-                      <form onSubmit={handleCreateMeeting} className="flex gap-4 w-full bg-white/40 dark:bg-black/40 p-2 rounded-xl border shadow-sm backdrop-blur-md">
-                          <input type="text" placeholder="What do you want to discuss? (e.g., Q3 Marketing Sync)" className="flex h-12 w-full rounded-lg bg-transparent px-4 py-2 text-base outline-none placeholder:text-muted-foreground" value={newMeetingTitle} onChange={(e) => setNewMeetingTitle(e.target.value)} required />
-                          <button type="submit" className="whitespace-nowrap inline-flex items-center justify-center h-12 px-8 text-sm font-bold transition-all rounded-lg shadow-md bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95">Create Thread</button>
+                      <form onSubmit={handleCreateMeeting} className="flex flex-col gap-4 w-full bg-white/40 dark:bg-black/40 p-5 rounded-xl border shadow-sm backdrop-blur-md">
+                          <input type="text" placeholder="What do you want to discuss? (e.g., Q3 Marketing Sync)" className="flex h-12 w-full rounded-lg bg-background px-4 py-2 text-base outline-none placeholder:text-muted-foreground border focus:ring-2 focus:ring-primary/20" value={newMeetingTitle} onChange={(e) => setNewMeetingTitle(e.target.value)} required />
+                          <textarea placeholder="Add a brief agenda or description..." className="flex min-h-[80px] w-full rounded-lg bg-background px-4 py-3 text-sm outline-none placeholder:text-muted-foreground border focus:ring-2 focus:ring-primary/20 resize-y" value={newMeetingAgenda} onChange={(e) => setNewMeetingAgenda(e.target.value)} required />
+                          <div className="flex justify-end mt-2">
+                              <button type="submit" className="whitespace-nowrap inline-flex items-center justify-center h-10 px-8 text-sm font-bold transition-all rounded-lg shadow-md bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95">Create Thread</button>
+                          </div>
                       </form>
                     </div>
                     )}
