@@ -145,12 +145,14 @@ function HomeView({ activeWorkspace }) {
           </div>
       )}
 
-      {/* HORIZONTAL SCROLLING RECENT THREADS */}
-      <div className="w-full px-6 py-12 bg-black/5 dark:bg-white/5 border-t border-border/50 flex-1">
+      {/* RECENT THREADS - PREMIUM GRID */}
+      <div className="w-full px-6 pb-24 relative z-20 -mt-8 flex-1">
           <div className="max-w-7xl mx-auto w-full">
-              <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center justify-between mb-8 px-2">
                   <h3 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                      <div className="p-2 bg-primary/10 text-primary rounded-xl">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                      </div>
                       Jump back in
                   </h3>
                   <button onClick={() => navigate('/dashboard')} className="text-sm font-bold text-primary hover:text-primary/80 flex items-center gap-1 group/link">
@@ -160,7 +162,7 @@ function HomeView({ activeWorkspace }) {
               </div>
 
               {recentMeetings.length === 0 ? (
-                  <div className="w-full py-16 flex flex-col items-center justify-center text-center opacity-60">
+                  <div className="w-full py-16 flex flex-col items-center justify-center text-center opacity-60 bg-white/30 dark:bg-black/30 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-white/5">
                       <div className="w-16 h-16 rounded-full bg-foreground/5 flex items-center justify-center mb-4">
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
                       </div>
@@ -168,33 +170,36 @@ function HomeView({ activeWorkspace }) {
                       <p className="text-sm text-muted-foreground mt-1">Start a new discussion using the composer above.</p>
                   </div>
               ) : (
-                  <div className="flex gap-6 overflow-x-auto pb-8 snap-x snap-mandatory hide-scrollbar">
-                      {recentMeetings.map(m => (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                      {recentMeetings.map((m, i) => (
                           <div 
                               key={m._id} 
                               onClick={() => navigate(`/meetings/${m._id}`)}
-                              className="snap-start shrink-0 w-[300px] md:w-[350px] h-[220px] rounded-3xl p-6 cursor-pointer relative overflow-hidden group/card bg-white dark:bg-black border shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between"
+                              className="group cursor-pointer relative overflow-hidden flex flex-col justify-between h-[240px] p-6 rounded-3xl bg-white/70 dark:bg-black/60 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:bg-white/90 dark:hover:bg-black/80 transition-all duration-500 hover:-translate-y-1.5"
                           >
-                              {/* Card Glow Effect */}
-                              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full mix-blend-multiply filter blur-2xl opacity-0 group-hover/card:opacity-100 transition-opacity duration-500"></div>
+                              {/* Accent Glow based on index */}
+                              <div className={`absolute -top-12 -right-12 w-40 h-40 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-0 group-hover:opacity-40 transition-opacity duration-700 ${i % 2 === 0 ? 'bg-primary' : 'bg-fuchsia-500'}`}></div>
 
                               <div>
-                                  <div className="flex items-center justify-between mb-4 relative z-10">
-                                      <span className={`inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-full ${m.status === 'Open' ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-foreground/10 text-foreground/70'}`}>
+                                  <div className="flex items-center justify-between mb-5 relative z-10">
+                                      <span className={`inline-flex items-center px-3 py-1 text-[11px] font-black uppercase tracking-wider rounded-full ${m.status === 'Open' ? 'bg-green-500/15 text-green-700 dark:text-green-400' : 'bg-foreground/10 text-foreground/70'}`}>
                                           {m.status}
                                       </span>
                                       <span className="text-xs font-medium text-muted-foreground">{getTimeAgo(m.createdAt)}</span>
                                   </div>
-                                  <h3 className="text-xl font-bold tracking-tight text-foreground line-clamp-2 leading-tight mb-2 relative z-10">
+                                  <h3 className="text-xl font-bold tracking-tight text-foreground line-clamp-2 leading-snug mb-3 relative z-10 group-hover:text-primary transition-colors">
                                       {m.title}
                                   </h3>
-                                  <p className="text-sm text-muted-foreground line-clamp-2 relative z-10">
+                                  <p className="text-sm text-muted-foreground line-clamp-2 relative z-10 leading-relaxed font-medium">
                                       {m.agenda || 'No agenda provided'}
                                   </p>
                               </div>
 
-                              <div className="flex items-center text-primary text-sm font-bold opacity-0 group-hover/card:opacity-100 transition-opacity translate-y-2 group-hover/card:translate-y-0 relative z-10">
-                                  Open Thread <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                              <div className="flex items-center gap-2 mt-4 text-primary text-sm font-bold opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 relative z-10">
+                                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                                  </div>
+                                  <span>Open Thread</span>
                               </div>
                           </div>
                       ))}
