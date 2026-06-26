@@ -114,7 +114,7 @@ function Dashboard({ activeWorkspace }) {
                       {activeWorkspace.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                      <h1 className="text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/70">{activeWorkspace.name}</h1>
+                      <h1 className="text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/70 pb-2">{activeWorkspace.name}</h1>
                       <p className="mt-2 text-lg text-muted-foreground font-medium">Manage your async meetings and team productivity.</p>
                   </div>
               </div>
