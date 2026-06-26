@@ -11,7 +11,7 @@ function LandingView() {
       </div>
       
       {/* HEADER */}
-      <header className="sticky top-0 z-50 flex items-center justify-between px-6 md:px-12 py-4 border-b bg-background/80 backdrop-blur-md">
+      <header className="fixed w-full top-0 z-50 flex items-center justify-between px-6 md:px-12 py-4 border-b bg-background/80 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-primary drop-shadow-md" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 1 0 0-8c-2 0-4 1.33-6 4Z"/>
