@@ -38,10 +38,15 @@ describe('Workspaces API Security & Functionality', () => {
 
   describe('GET /api/workspaces', () => {
     it('should return workspaces for the authenticated user', async () => {
-      Workspace.find.mockResolvedValue([
+      const mockResult = [
         { _id: 'ws1', name: 'Dev Workspace', members: ['mock_user_id'] },
         { _id: 'ws2', name: 'Design Workspace', members: ['mock_user_id'] }
-      ]);
+      ];
+      Workspace.find.mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          populate: jest.fn().mockResolvedValue(mockResult)
+        })
+      });
 
       const response = await request(app)
         .get('/api/workspaces')
