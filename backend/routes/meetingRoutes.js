@@ -174,4 +174,25 @@ router.post('/:id/add-user', authenticateToken, async (req, res) => {
     }
 });
 
+router.delete('/:id/remove-user', authenticateToken, async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const meeting = await Meeting.findById(req.params.id);
+        if (!meeting) return res.status(404).json({ error: "Meeting not found" });
+
+        const workspace = await Workspace.findById(meeting.workspaceId);
+        // Only workspace owner or meeting creator can remove (assuming creator is the only one managing, or owner)
+        if (workspace.ownerId.toString() !== req.user.userId && !meeting.allowedUsers.includes(req.user.userId)) {
+            return res.status(403).json({ error: "Only members of this meeting can manage access." });
+        }
+
+        meeting.allowedUsers = meeting.allowedUsers.filter(id => id.toString() !== userId);
+        await meeting.save();
+
+        res.status(200).json({ message: "User removed from meeting successfully" });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to remove user from meeting" });
+    }
+});
+
 module.exports = router;

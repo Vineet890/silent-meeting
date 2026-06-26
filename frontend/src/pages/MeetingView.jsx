@@ -440,18 +440,23 @@ export default function MeetingView({ isDarkMode, toggleDarkMode }) {
                         </div>
                         <button 
                           onClick={async () => {
-                            if (isAllowed) return;
-                            await apiFetch(`/api/meetings/${id}/add-user`, {
-                              method: 'POST',
-                              body: JSON.stringify({ userId: member._id })
-                            });
-                            // optimistically update
-                            setMeeting(prev => ({ ...prev, allowedUsers: [...(prev.allowedUsers || []), member._id] }));
+                            if (isAllowed) {
+                              await apiFetch(`/api/meetings/${id}/remove-user`, {
+                                method: 'DELETE',
+                                body: JSON.stringify({ userId: member._id })
+                              });
+                              setMeeting(prev => ({ ...prev, allowedUsers: prev.allowedUsers.filter(u => u !== member._id) }));
+                            } else {
+                              await apiFetch(`/api/meetings/${id}/add-user`, {
+                                method: 'POST',
+                                body: JSON.stringify({ userId: member._id })
+                              });
+                              setMeeting(prev => ({ ...prev, allowedUsers: [...(prev.allowedUsers || []), member._id] }));
+                            }
                           }}
-                          disabled={isAllowed}
-                          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${isAllowed ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${isAllowed ? 'bg-red-500/10 text-red-600 hover:bg-red-500/20' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
                         >
-                          {isAllowed ? 'Added' : 'Add'}
+                          {isAllowed ? 'Remove' : 'Add'}
                         </button>
                       </div>
                     )
