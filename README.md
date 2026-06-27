@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/Vineet890/syncloop/main/logo.svg" alt="SyncLoop Logo" width="80" height="80" />
+  <img src="./logo.svg" alt="SyncLoop Logo" width="80" height="80" />
   <h1>SyncLoop</h1>
   <p><strong>An Asynchronous Video Communication Platform for Distributed Engineering Teams</strong></p>
   
