@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../utils/api';
+import GlobalFooter from '../components/layout/GlobalFooter';
 
 function HomeView({ activeWorkspace }) {
   const navigate = useNavigate();
@@ -71,11 +72,11 @@ function HomeView({ activeWorkspace }) {
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
       
       {/* IMMERSIVE HERO SECTION */}
-      <div className="relative w-full pt-20 pb-28 flex flex-col items-center justify-center overflow-hidden">
+      <div className="relative w-full pt-32 pb-32 flex flex-col items-center justify-center overflow-hidden min-h-[50vh]">
           {/* Animated Background Blobs */}
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full mix-blend-multiply filter blur-[128px] opacity-70 animate-blob"></div>
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-indigo-500/20 rounded-full mix-blend-multiply filter blur-[128px] opacity-70 animate-blob animation-delay-2000"></div>
-          <div className="absolute -bottom-32 left-1/2 -translate-x-1/2 w-[40rem] h-96 bg-fuchsia-500/20 rounded-full mix-blend-multiply filter blur-[128px] opacity-50 animate-blob animation-delay-4000"></div>
+          <div className="absolute top-10 left-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[120px] opacity-70 animate-blob"></div>
+          <div className="absolute top-10 right-1/4 w-[500px] h-[500px] bg-indigo-500/10 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[120px] opacity-70 animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-32 left-1/2 -translate-x-1/2 w-[600px] h-[500px] bg-fuchsia-500/10 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[120px] opacity-50 animate-blob animation-delay-4000"></div>
 
           <div className="relative z-10 max-w-3xl w-full px-6 text-center flex flex-col items-center">
               <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-4 pb-4 leading-normal bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
@@ -138,7 +139,7 @@ function HomeView({ activeWorkspace }) {
 
       {/* FLOATING ACTION STRIP (If there are invites) */}
       {activeInvites.length > 0 && (
-          <div className="max-w-2xl mx-auto w-full px-6 -mt-16 mb-12 relative z-30">
+          <div className="max-w-2xl mx-auto w-full px-6 -mt-8 mb-16 relative z-30">
               <div className="flex items-center justify-between p-4 px-6 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-2xl shadow-orange-500/20 animate-in slide-in-from-bottom-4">
                   <div className="flex items-center gap-3">
                       <div className="p-1.5 bg-white/20 rounded-full backdrop-blur-md">
@@ -154,8 +155,8 @@ function HomeView({ activeWorkspace }) {
       )}
 
       {/* RECENT THREADS - PREMIUM GRID */}
-      <div className="w-full px-6 pb-24 relative z-20 -mt-8 flex-1">
-          <div className="max-w-7xl mx-auto w-full">
+      <div className="w-full px-6 py-12 relative z-20 flex-1 flex flex-col">
+          <div className="max-w-7xl mx-auto w-full flex-1">
               <div className="flex items-center justify-between mb-8 px-2">
                   <h3 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
                       <div className="p-2 bg-primary/10 text-primary rounded-xl">
@@ -170,7 +171,7 @@ function HomeView({ activeWorkspace }) {
               </div>
 
               {recentMeetings.length === 0 ? (
-                  <div className="w-full py-16 flex flex-col items-center justify-center text-center opacity-60 bg-white/30 dark:bg-black/30 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-white/5">
+                  <div className="w-full py-24 min-h-[40vh] flex flex-col items-center justify-center text-center opacity-80 bg-white/30 dark:bg-black/30 backdrop-blur-xl rounded-[2.5rem] border border-white/20 dark:border-white/5 shadow-sm">
                       <div className="w-16 h-16 rounded-full bg-foreground/5 flex items-center justify-center mb-4">
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
                       </div>
@@ -219,22 +220,7 @@ function HomeView({ activeWorkspace }) {
           </div>
       </div>
       
-      {/* FOOTER */}
-      <footer className="px-6 md:px-12 py-12 mt-auto border-t bg-background">
-        <div className="flex flex-col items-center justify-between gap-6 mx-auto md:flex-row max-w-7xl">
-          <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-muted-foreground" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 1 0 0-8c-2 0-4 1.33-6 4Z"/>
-            </svg>
-            <span className="font-semibold text-muted-foreground">SyncLoop</span>
-          </div>
-          <div className="flex gap-6 text-sm text-muted-foreground">
-            <p>Built by Vineet Kumar</p>
-            <a href="mailto:vineet765245@gmail.com" className="transition-colors hover:text-primary">Contact Support</a>
-            <a href="https://github.com/Vineet890/silent-meeting" target="_blank" rel="noreferrer" className="transition-colors hover:text-primary">GitHub</a>
-          </div>
-        </div>
-      </footer>
+      <GlobalFooter />
     </div>
   );
 }

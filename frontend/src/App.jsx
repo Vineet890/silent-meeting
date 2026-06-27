@@ -15,7 +15,9 @@ function App() {
   const [activeWorkspace, setActiveWorkspace] = useState(null);
   
   const [isDarkMode, setIsDarkMode] = useState(() => {
-      return localStorage.getItem('darkMode') === 'true';
+      const stored = localStorage.getItem('darkMode');
+      if (stored !== null) return stored === 'true';
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
   useEffect(() => {

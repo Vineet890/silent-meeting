@@ -1,17 +1,18 @@
 import { Link } from 'react-router-dom';
+import GlobalFooter from '../components/layout/GlobalFooter';
 
 function LandingView() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden relative">
       {/* GLOBAL VIBRANT BACKGROUND ORBS */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
-        <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-blue-600/20 rounded-full blur-[120px]"></div>
-        <div className="absolute top-[40%] right-[-10%] w-[40vw] h-[40vw] bg-purple-600/20 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-[-10%] left-[20%] w-[60vw] h-[60vw] bg-indigo-600/10 rounded-full blur-[150px]"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-primary/20 rounded-full blur-[120px] mix-blend-multiply dark:mix-blend-screen opacity-70 dark:opacity-40"></div>
+        <div className="absolute top-[40%] right-[-10%] w-[40vw] h-[40vw] bg-fuchsia-500/20 rounded-full blur-[120px] mix-blend-multiply dark:mix-blend-screen opacity-70 dark:opacity-40"></div>
+        <div className="absolute bottom-[-10%] left-[20%] w-[60vw] h-[60vw] bg-info/10 rounded-full blur-[150px] mix-blend-multiply dark:mix-blend-screen opacity-70 dark:opacity-40"></div>
       </div>
       
       {/* HEADER */}
-      <header className="fixed w-full top-0 z-50 flex items-center justify-between px-6 md:px-12 py-4 border-b bg-background/80 backdrop-blur-md">
+      <header className="fixed w-full top-0 z-50 flex items-center justify-between px-6 md:px-12 py-4 border-b border-border/50 bg-background/80 backdrop-blur-md">
         <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-primary drop-shadow-md" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 1 0 0-8c-2 0-4 1.33-6 4Z"/>
@@ -19,10 +20,10 @@ function LandingView() {
           <span className="text-2xl font-black tracking-tighter">SyncLoop</span>
         </div>
         <div className="flex gap-4">
-          <Link to="/login" className="px-4 py-2 text-sm font-medium transition-colors rounded-md text-muted-foreground hover:text-foreground">
+          <Link to="/login" className="px-4 py-2 text-sm font-medium transition-colors rounded-xl text-muted-foreground hover:text-foreground">
             Sign In
           </Link>
-          <Link to="/login" className="px-4 py-2 text-sm font-medium transition-colors rounded-md shadow bg-primary text-primary-foreground hover:bg-primary/90">
+          <Link to="/login" className="px-4 py-2 text-sm font-bold transition-all rounded-xl shadow-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95">
             Get Started Free
           </Link>
         </div>
@@ -34,7 +35,7 @@ function LandingView() {
           <div className="relative z-10 mt-12 w-full max-w-6xl mx-auto">
             <h1 className="max-w-5xl mx-auto mb-8 text-5xl font-black tracking-tighter sm:text-7xl lg:text-[6rem] leading-[1.1]">
               <span className="block pb-2">Meetings that</span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 drop-shadow-sm pb-4">don't waste your time.</span>
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary via-info to-fuchsia-500 drop-shadow-sm pb-4">don't waste your time.</span>
             </h1>
             <p className="max-w-2xl mx-auto mb-12 text-xl font-medium text-muted-foreground leading-relaxed">
               SyncLoop replaces endless live calls with asynchronous video threads. Record your updates, watch them on your own time, and let AI summarize the key takeaways.
@@ -119,22 +120,7 @@ function LandingView() {
 
       </main>
 
-      {/* FOOTER */}
-      <footer className="px-12 py-12 border-t bg-muted/20">
-        <div className="flex flex-col items-center justify-between gap-6 mx-auto md:flex-row max-w-7xl">
-          <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-muted-foreground" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 1 0 0-8c-2 0-4 1.33-6 4Z"/>
-            </svg>
-            <span className="font-semibold text-muted-foreground">SyncLoop</span>
-          </div>
-          <div className="flex gap-6 text-sm text-muted-foreground">
-            <p>Built by Vineet Kumar</p>
-            <a href="mailto:vineet765245@gmail.com" className="hover:text-primary transition-colors">Contact Support</a>
-            <a href="https://github.com/Vineet890/silent-meeting" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors">GitHub</a>
-          </div>
-        </div>
-      </footer>
+      <GlobalFooter />
     </div>
   );
 }

@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import { UsersIcon, LogoIcon } from '../components/ui/Icons';
+import { UsersIcon } from '../components/ui/Icons';
 import VideoRecorder from '../components/meeting/VideoRecorder';
 import VideoThread from '../components/meeting/VideoThread';
 import SyncIntelligenceChat from '../components/meeting/SyncIntelligenceChat';
-import NotificationBell from '../components/ui/NotificationBell';
+import GlobalHeader from '../components/layout/GlobalHeader';
+import GlobalFooter from '../components/layout/GlobalFooter';
 import { apiFetch } from '../utils/api';
 
 export default function MeetingView({ isDarkMode, toggleDarkMode }) {
@@ -117,8 +118,7 @@ export default function MeetingView({ isDarkMode, toggleDarkMode }) {
       };
 
       mediaRecorder.onstop = async () => {
-        const videoBlob = new Blob(videoChunksRef.current, { type: 'video/webm' });
-        await uploadVideo(videoBlob);
+        await handleUpload();
       };
 
       mediaRecorder.start();
@@ -165,8 +165,7 @@ export default function MeetingView({ isDarkMode, toggleDarkMode }) {
       };
 
       mediaRecorder.onstop = async () => {
-        const videoBlob = new Blob(videoChunksRef.current, { type: 'video/webm' });
-        await uploadVideo(videoBlob);
+        await handleUpload();
       };
 
       // Auto-stop if user clicks browser's "Stop sharing" button
@@ -216,12 +215,22 @@ export default function MeetingView({ isDarkMode, toggleDarkMode }) {
 
   const handleUpload = async () => {
     setIsUploading(true);
-    const videoBlob = new Blob(videoChunksRef.current, { type: 'video/webm' });
-    const formData = new FormData();
-    formData.append('video', videoBlob, 'reply.webm');
-    formData.append('meetingId', id);
+    try {
+        const videoBlob = new Blob(videoChunksRef.current, { type: 'video/webm' });
+        const formData = new FormData();
+        formData.append('video', videoBlob, 'reply.webm');
+        formData.append('meetingId', id);
 
-    await apiFetch('/api/replies', { method: 'POST', body: formData });
+        const response = await apiFetch('/api/replies', { method: 'POST', body: formData });
+        if (!response.ok) {
+            const errorData = await response.json();
+            alert(`Upload failed: ${errorData.error || 'Unknown error'}`);
+            console.error("Backend Error:", errorData);
+        }
+    } catch (err) {
+        alert(`Upload error: ${err.message}`);
+        console.error("Network Error:", err);
+    }
     setIsUploading(false);
   };
 
@@ -293,61 +302,17 @@ export default function MeetingView({ isDarkMode, toggleDarkMode }) {
   return (
     <div className="flex flex-col min-h-screen overflow-y-auto bg-background text-foreground">
       
-      {/* HEADER WITH BACK BUTTON AND PROFILE */}
-      <header className="sticky top-0 z-50 flex items-center justify-between px-12 py-4 border-b bg-background/80 backdrop-blur-md">
-        <div className="flex items-center flex-1">
-            <button onClick={() => navigate(-1)} className="flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors border rounded-md hover:bg-accent hover:text-accent-foreground text-muted-foreground">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-              Back
-            </button>
-        </div>
-        
-        <div className="flex items-center flex-1 gap-3 cursor-pointer" onClick={() => navigate('/')}>
-            <LogoIcon className="text-primary drop-shadow-md" />
-            <span className="text-2xl font-black tracking-tighter">SyncLoop</span>
-        </div>
-
-        <div className="flex items-center justify-end flex-1 gap-4">
-            {workspace && (workspace.ownerId === user.id || meeting?.allowedUsers?.includes(user.id)) && (
-              <button 
-                  onClick={() => setIsAccessModalOpen(true)}
-                  className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors rounded-full bg-primary/10 text-primary hover:bg-primary/20"
-              >
-                  <UsersIcon className="w-4 h-4" />
-                  Manage Access
-              </button>
-            )}
-            <NotificationBell />
-            <button 
-                onClick={toggleDarkMode} 
-                className="relative flex items-center justify-center w-10 h-10 transition-all rounded-full bg-white/50 border border-black/5 hover:bg-white dark:bg-black/50 dark:border-white/10 dark:hover:bg-black/80 shadow-sm hover:shadow hover:scale-105 active:scale-95" 
-                title="Toggle Dark Mode" 
-            >
-                {isDarkMode ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-yellow-400 drop-shadow-sm"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
-                ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-600 drop-shadow-sm"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
-                )}
-            </button>
-            <div className="relative">
-                <div className="flex items-center justify-center w-8 h-8 text-sm font-medium cursor-pointer bg-primary text-primary-foreground rounded-full" onClick={() => setDropdownOpen(!dropdownOpen)}>
-                    {user.name ? user.name.charAt(0).toUpperCase() : 'V'}
-                </div>
-                {dropdownOpen && (
-                    <div className="absolute right-0 z-50 p-2 mt-2 border shadow-lg rounded-xl w-48 bg-popover text-popover-foreground animate-in fade-in slide-in-from-top-2">
-                        <div className="px-4 py-2 mb-2 border-b">
-                            <p className="text-sm font-bold">{user.name}</p>
-                            <p className="text-xs text-muted-foreground">{user.email}</p>
-                        </div>
-                        <button className="w-full px-4 py-2 text-left text-sm transition-colors rounded-md hover:bg-accent" onClick={() => { setDropdownOpen(false); navigate('/settings'); }}>Account Settings</button>
-                        <button className="w-full px-4 py-2 text-left text-sm transition-colors rounded-md hover:bg-accent" onClick={() => { setDropdownOpen(false); navigate('/settings'); }}>Workspace Preferences</button>
-                        <div className="my-1 border-t"></div>
-                        <button className="w-full px-4 py-2 text-left text-sm text-destructive transition-colors rounded-md hover:bg-destructive/10" onClick={handleLogout}>Log Out</button>
-                    </div>
-                )}
-            </div>
-        </div>
-      </header>
+      <GlobalHeader 
+        isDarkMode={isDarkMode} 
+        toggleDarkMode={toggleDarkMode}
+        isOnline={navigator.onLine}
+        leftSlot={
+          <button onClick={() => navigate(-1)} className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors border border-border/50 rounded-xl hover:bg-accent hover:text-accent-foreground mr-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+            Back
+          </button>
+        }
+      />
 
       <div className="flex-1 w-full px-16 py-12">
         <div className="flex gap-8">
@@ -420,7 +385,10 @@ export default function MeetingView({ isDarkMode, toggleDarkMode }) {
           </div>
 
           {/* RIGHT COLUMN: RECORDING & CHAT */}
-          <div className="flex flex-col flex-1 gap-8 sticky top-24 h-fit">
+          <div className="flex flex-col flex-1 gap-8 sticky top-24 h-fit relative">
+            
+            {/* Cinematic Glow Behind Video Recorder */}
+            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[500px] bg-primary/15 rounded-full blur-[100px] -z-10 pointer-events-none dark:bg-primary/20" />
             
             <VideoRecorder 
                 meetingStatus={meeting.status}
@@ -446,20 +414,7 @@ export default function MeetingView({ isDarkMode, toggleDarkMode }) {
         </div>
       </div>
 
-      {/* PRO FOOTER */}
-      <footer className="px-12 py-12 mt-auto border-t bg-muted/20">
-        <div className="flex flex-col items-center justify-between gap-6 mx-auto md:flex-row max-w-7xl">
-          <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/')}>
-            <LogoIcon className="text-muted-foreground w-6 h-6" />
-            <span className="font-semibold text-muted-foreground">SyncLoop</span>
-          </div>
-          <div className="flex gap-6 text-sm text-muted-foreground">
-            <p>Built by Vineet Kumar</p>
-            <a href="mailto:vineet765245@gmail.com" className="transition-colors hover:text-primary">Contact Support</a>
-            <a href="https://github.com/Vineet890/silent-meeting" target="_blank" rel="noreferrer" className="transition-colors hover:text-primary">GitHub</a>
-          </div>
-        </div>
-      </footer>
+      <GlobalFooter />
 
       {/* CONFIRM MODAL */}
       {showConfirmModal && (

@@ -110,7 +110,7 @@ function LoginView() {
                 <input 
                   type="text" 
                   placeholder="Your Name" 
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" 
+                  className="flex h-12 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm transition-all placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary hover:border-primary/50" 
                   value={formData.name} 
                   onChange={(e) => setFormData({...formData, name: e.target.value})} 
                   required 
@@ -123,7 +123,7 @@ function LoginView() {
                 <input 
                 type="email" 
                 placeholder="name@gmail.com" 
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" 
+                className="flex h-12 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm transition-all placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary hover:border-primary/50" 
                 value={formData.email} 
                 onChange={(e) => setFormData({...formData, email: e.target.value})} 
                 required 
@@ -137,14 +137,14 @@ function LoginView() {
                 </div>
                 <input 
                 type="password" 
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" 
+                className="flex h-12 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm transition-all placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary hover:border-primary/50" 
                 value={formData.password} 
                 onChange={(e) => setFormData({...formData, password: e.target.value})} 
                 required 
                 />
             </div>
 
-            <button type="submit" className="inline-flex items-center justify-center w-full h-10 px-4 py-2 mt-2 text-sm font-medium transition-colors rounded-md shadow bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+            <button type="submit" className="inline-flex items-center justify-center w-full h-12 px-4 py-2 mt-2 text-sm font-bold transition-all rounded-xl shadow-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
               {isLogin ? 'Sign In' : 'Create Account'}
             </button>
           </form>

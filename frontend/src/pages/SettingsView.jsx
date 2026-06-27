@@ -66,7 +66,7 @@ function SettingsView() {
                             <label className="block mb-2 text-sm font-medium text-foreground">Full Name</label>
                             <input 
                                 type="text" 
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                className="flex h-12 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm transition-all placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary hover:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50"
                                 value={name} 
                                 onChange={(e) => setName(e.target.value)}
                                 required
@@ -74,10 +74,10 @@ function SettingsView() {
                         </div>
                         <div>
                             <label className="block mb-2 text-sm font-medium text-foreground">Email Address</label>
-                            <input type="email" className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm shadow-sm transition-colors opacity-70 cursor-not-allowed" defaultValue={user.email} disabled />
+                            <input type="email" className="flex h-12 w-full rounded-xl border border-input bg-muted px-3 py-2 text-sm shadow-sm transition-colors opacity-70 cursor-not-allowed" defaultValue={user.email} disabled />
                         </div>
                         <div className="pt-2">
-                            <button type="submit" className="inline-flex items-center justify-center h-10 px-4 py-2 text-sm font-medium transition-colors rounded-md shadow bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50" disabled={isUpdating || name === user.name}>
+                            <button type="submit" className="inline-flex items-center justify-center h-12 px-6 py-2 text-sm font-bold transition-all rounded-xl shadow bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50" disabled={isUpdating || name === user.name}>
                                 {isUpdating ? 'Updating...' : 'Update Profile'}
                             </button>
                         </div>
@@ -89,7 +89,7 @@ function SettingsView() {
                     <p className="mb-6 text-sm text-muted-foreground">If you no longer need your account, you can permanently delete it here. This will remove all your workspaces and data.</p>
                     <button 
                         onClick={handleDeleteAccount}
-                        className="inline-flex items-center justify-center h-10 px-4 py-2 text-sm font-medium transition-colors rounded-md shadow bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50" 
+                        className="inline-flex items-center justify-center h-12 px-6 py-2 text-sm font-bold transition-all rounded-xl shadow bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/50 disabled:pointer-events-none disabled:opacity-50" 
                         disabled={isDeleting}
                     >
                         {isDeleting ? 'Deleting...' : 'Delete Account'}

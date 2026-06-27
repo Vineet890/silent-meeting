@@ -50,8 +50,14 @@ function TeamView({ activeWorkspace, setActiveWorkspace }) {
 
   if (!activeWorkspace) {
       return (
-          <div className="px-16 py-12">
-              <h2 className="text-xl font-semibold tracking-tight text-foreground">Select a workspace to manage team members.</h2>
+          <div className="flex flex-col flex-1 w-full px-8 md:px-16 pb-12 pt-12">
+              <div className="flex flex-col items-center justify-center p-16 text-center border-2 border-dashed bg-white/40 backdrop-blur-3xl rounded-[2.5rem] shadow-sm dark:bg-black/40 dark:border-white/10 min-h-[50vh] flex-1">
+                  <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-6">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M16 11h6"/></svg>
+                  </div>
+                  <h2 className="text-2xl font-bold tracking-tight text-foreground">No Workspace Selected</h2>
+                  <p className="text-muted-foreground mt-2 max-w-sm">Select a workspace from the sidebar or create a new one to manage your team directory.</p>
+              </div>
           </div>
       );
   }
@@ -60,7 +66,7 @@ function TeamView({ activeWorkspace, setActiveWorkspace }) {
     <div className="flex-1 w-full px-16 py-12 relative">
         {/* Toast Notification */}
         {toast.visible && (
-            <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-full shadow-lg border backdrop-blur-md font-medium text-sm flex items-center gap-2 animate-in fade-in slide-in-from-top-4 transition-all ${toast.type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400' : 'bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400'}`}>
+            <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-full shadow-lg border backdrop-blur-md font-medium text-sm flex items-center gap-2 animate-in fade-in slide-in-from-top-4 transition-all ${toast.type === 'error' ? 'bg-destructive/10 border-destructive/20 text-destructive' : 'bg-success/10 border-success/20 text-success'}`}>
                 {toast.type === 'error' ? (
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 ) : (
@@ -87,7 +93,7 @@ function TeamView({ activeWorkspace, setActiveWorkspace }) {
                         </button>
                         <button 
                             onClick={executeRemoveMember}
-                            className="px-5 py-2.5 text-sm font-medium rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors shadow-sm"
+                            className="px-5 py-2.5 text-sm font-bold rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors shadow-sm"
                         >
                             Yes, remove
                         </button>
@@ -118,7 +124,7 @@ function TeamView({ activeWorkspace, setActiveWorkspace }) {
                                 {user.id === activeWorkspace.ownerId && member._id !== activeWorkspace.ownerId && (
                                     <button 
                                         onClick={() => setMemberToRemove(member)}
-                                        className="text-xs font-semibold px-4 py-2 rounded-full text-red-600 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-100 dark:border-red-900/30 transition-colors"
+                                        className="text-xs font-bold px-4 py-2 rounded-full text-destructive bg-destructive/10 hover:bg-destructive/20 border border-destructive/20 transition-colors"
                                     >
                                         Remove
                                     </button>
@@ -153,7 +159,7 @@ function TeamView({ activeWorkspace, setActiveWorkspace }) {
                     <h3 className="mb-4 text-xl font-semibold tracking-tight">Invite Teammate</h3>
                     <p className="mb-6 text-sm text-muted-foreground">Add a coworker to <strong className="font-medium text-foreground">{activeWorkspace.name}</strong>.</p>
                     <form onSubmit={handleInvite} className="flex flex-col gap-4">
-                        <input type="email" placeholder="Email address" className="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} required />
+                        <input type="email" placeholder="Email address" className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm shadow-sm transition-all placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary hover:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} required />
                         <button type="submit" className="inline-flex items-center justify-center h-11 px-4 py-2 text-sm font-bold text-white transition-all bg-primary rounded-xl shadow-md hover:bg-primary/90 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-50 active:scale-95">Send Invite</button>
                     </form>
                 </div>

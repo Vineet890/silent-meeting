@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, Tooltip, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 import { apiFetch } from '../utils/api';
+import GlobalFooter from '../components/layout/GlobalFooter';
 
 function Dashboard({ activeWorkspace }) {
   const navigate = useNavigate();
@@ -82,10 +83,10 @@ function Dashboard({ activeWorkspace }) {
   // Removed hardcoded analyticsData since it's now dynamically set via state
 
   return (
-    <div className="flex flex-col flex-1 w-full">
+    <div className="flex flex-col flex-1 min-h-full bg-transparent overflow-x-hidden">
       
-      {/* SEARCH BAR */}
-      <div className="w-full px-16 pt-12 pb-6 max-w-4xl mx-auto">
+      {/* Search Header */}
+      <div className="w-full px-8 md:px-16 pt-12 pb-8 relative z-20 max-w-4xl mx-auto">
         <div className="relative w-full">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute z-10 left-6 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none">
                 <circle cx="11" cy="11" r="8"></circle>
@@ -102,10 +103,14 @@ function Dashboard({ activeWorkspace }) {
         </div>
       </div>
 
-      <div className="flex-1 w-full px-16 pb-12">
+      <div className="flex flex-col flex-1 w-full px-8 md:px-16 pb-12">
           {!activeWorkspace ? (
-          <div className="p-16 text-center border bg-white/65 backdrop-blur-md rounded-2xl shadow-sm dark:bg-black/65 dark:border-white/5">
-              <h2 className="text-xl font-semibold tracking-tight text-foreground">Select or create a workspace to begin!</h2>
+          <div className="flex flex-col items-center justify-center p-16 text-center border-2 border-dashed bg-white/40 backdrop-blur-3xl rounded-[2.5rem] shadow-sm dark:bg-black/40 dark:border-white/10 min-h-[50vh] flex-1">
+              <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight text-foreground">No Workspace Selected</h2>
+              <p className="text-muted-foreground mt-2 max-w-sm">Select a workspace from the sidebar or create a new one to access your dashboard analytics.</p>
           </div>
           ) : (
           <>
@@ -122,48 +127,48 @@ function Dashboard({ activeWorkspace }) {
               {!isSearching && (
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
                       <div className="flex flex-col gap-4">
-                          <div className="relative overflow-hidden p-6 rounded-2xl border border-blue-100 dark:border-blue-900/50 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-900/20 shadow-sm hover:shadow-md transition-all group">
-                              <div className="flex items-center justify-between mb-4">
-                                  <h3 className="text-sm font-semibold text-blue-700 dark:text-blue-300">Active Threads</h3>
-                                  <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg text-blue-600 dark:text-blue-400">
+                          <div className="relative overflow-hidden p-6 rounded-[2rem] border border-white/10 dark:border-white/5 bg-white/40 dark:bg-black/40 backdrop-blur-3xl shadow-2xl transition-all duration-500 group hover:-translate-y-2 hover:shadow-primary/10">
+                              <div className="flex items-center justify-between mb-8 z-10 relative">
+                                  <h3 className="text-sm font-bold tracking-widest uppercase text-muted-foreground group-hover:text-foreground transition-colors">Active Threads</h3>
+                                  <div className="p-3 bg-primary/10 rounded-2xl text-primary transition-all duration-500 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
                                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                                   </div>
                               </div>
-                              <div className="text-4xl font-black tracking-tight text-blue-900 dark:text-blue-100">{activeThreads}</div>
-                              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
+                              <div className="text-6xl font-black tracking-tighter text-foreground z-10 relative">{activeThreads}</div>
+                              <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-primary/20 rounded-full blur-[60px] group-hover:bg-primary/30 transition-all duration-700"></div>
                           </div>
                           
-                          <div className="relative overflow-hidden p-6 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-900/20 shadow-sm hover:shadow-md transition-all group">
-                              <div className="flex items-center justify-between mb-4">
-                                  <h3 className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Resolved Discussions</h3>
-                                  <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-lg text-emerald-600 dark:text-emerald-400">
+                          <div className="relative overflow-hidden p-6 rounded-[2rem] border border-white/10 dark:border-white/5 bg-white/40 dark:bg-black/40 backdrop-blur-3xl shadow-2xl transition-all duration-500 group hover:-translate-y-2 hover:shadow-success/10">
+                              <div className="flex items-center justify-between mb-8 z-10 relative">
+                                  <h3 className="text-sm font-bold tracking-widest uppercase text-muted-foreground group-hover:text-foreground transition-colors">Resolved</h3>
+                                  <div className="p-3 bg-success/10 rounded-2xl text-success transition-all duration-500 group-hover:bg-success group-hover:text-success-foreground group-hover:scale-110">
                                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                                   </div>
                               </div>
-                              <div className="text-4xl font-black tracking-tight text-emerald-900 dark:text-emerald-100">{resolvedDiscussions}</div>
-                              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all"></div>
+                              <div className="text-6xl font-black tracking-tighter text-foreground z-10 relative">{resolvedDiscussions}</div>
+                              <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-success/20 rounded-full blur-[60px] group-hover:bg-success/30 transition-all duration-700"></div>
                           </div>
 
-                          <div className="relative overflow-hidden p-6 rounded-2xl border border-purple-100 dark:border-purple-900/50 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-900/20 shadow-sm hover:shadow-md transition-all group">
-                              <div className="flex items-center justify-between mb-4">
-                                  <h3 className="text-sm font-semibold text-purple-700 dark:text-purple-300">Total Videos</h3>
-                                  <div className="p-2 bg-purple-100 dark:bg-purple-900/50 rounded-lg text-purple-600 dark:text-purple-400">
+                          <div className="relative overflow-hidden p-6 rounded-[2rem] border border-white/10 dark:border-white/5 bg-white/40 dark:bg-black/40 backdrop-blur-3xl shadow-2xl transition-all duration-500 group hover:-translate-y-2 hover:shadow-warning/10">
+                              <div className="flex items-center justify-between mb-8 z-10 relative">
+                                  <h3 className="text-sm font-bold tracking-widest uppercase text-muted-foreground group-hover:text-foreground transition-colors">Total Videos</h3>
+                                  <div className="p-3 bg-warning/10 rounded-2xl text-warning transition-all duration-500 group-hover:bg-warning group-hover:text-warning-foreground group-hover:scale-110">
                                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
                                   </div>
                               </div>
-                              <div className="text-4xl font-black tracking-tight text-purple-900 dark:text-purple-100">{totalVideos}</div>
-                              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all"></div>
+                              <div className="text-6xl font-black tracking-tighter text-foreground z-10 relative">{totalVideos}</div>
+                              <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-warning/20 rounded-full blur-[60px] group-hover:bg-warning/30 transition-all duration-700"></div>
                           </div>
                       </div>
 
-                      <div className="lg:col-span-2 relative p-8 rounded-2xl border border-border/50 bg-white/60 dark:bg-black/40 backdrop-blur-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-                          <div className="flex items-center justify-between mb-8 z-10">
+                      <div className="lg:col-span-2 relative p-10 rounded-[2.5rem] border border-white/10 dark:border-white/5 bg-white/40 dark:bg-black/40 backdrop-blur-3xl shadow-2xl transition-all flex flex-col justify-between">
+                          <div className="flex items-center justify-between mb-12 z-10">
                               <div>
-                                  <h3 className="text-xl font-bold tracking-tight text-foreground">Top Active Discussions</h3>
-                                  <p className="text-sm text-muted-foreground mt-1">Threads with the highest engagement.</p>
+                                  <h3 className="text-2xl font-black tracking-tighter text-foreground">Top Active Discussions</h3>
+                                  <p className="text-sm font-medium text-muted-foreground mt-2">Threads with the highest engagement.</p>
                               </div>
-                              <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                              <div className="p-4 bg-primary/10 rounded-2xl text-primary">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
                               </div>
                           </div>
                           
@@ -241,22 +246,7 @@ function Dashboard({ activeWorkspace }) {
           )}
       </div>
 
-      {/* PRO FOOTER */}
-      <footer className="px-12 py-12 mt-auto border-t bg-muted/20">
-        <div className="flex flex-col items-center justify-between gap-6 mx-auto md:flex-row max-w-7xl">
-          <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/')}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-muted-foreground" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 1 0 0-8c-2 0-4 1.33-6 4Z"/>
-            </svg>
-            <span className="font-semibold text-muted-foreground">SyncLoop</span>
-          </div>
-          <div className="flex gap-6 text-sm text-muted-foreground">
-            <p>Built by Vineet Kumar</p>
-            <a href="mailto:vineet765245@gmail.com" className="transition-colors hover:text-primary">Contact Support</a>
-            <a href="https://github.com/Vineet890/silent-meeting" target="_blank" rel="noreferrer" className="transition-colors hover:text-primary">GitHub</a>
-          </div>
-        </div>
-      </footer>
+      <GlobalFooter />
     </div>
   );
 }
