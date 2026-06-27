@@ -73,14 +73,14 @@ graph TD
 
 > **Note to Reviewer:** Replace these placeholders with actual high-resolution screenshots of the deployed application.
 
-### Workspace Dashboard
-![Dashboard Screenshot Placeholder](https://placehold.co/800x450/EEE/31343C?font=montserrat&text=Workspace+Dashboard)
+### Home Dashboard (Dark Mode)
+![Dark Mode Home](./assets/dark-home.png)
 
 ### Video Thread & AI Summary
-![Thread Screenshot Placeholder](https://placehold.co/800x450/EEE/31343C?font=montserrat&text=Video+Thread+%26+AI+Summary)
+![Video Thread & AI Summary](./assets/video-thread.png)
 
-### Dark Mode Interface
-![Dark Mode Screenshot Placeholder](https://placehold.co/800x450/1A1A1A/FFFFFF?font=montserrat&text=Dark+Mode+Interface)
+### Home Dashboard (Light Mode)
+![Light Mode Home](./assets/light-home.png)
 
 ---
 
