@@ -35,7 +35,7 @@
 - **Threaded Communication:** Deeply nested text comments on specific video replies to maintain organized and contextual discussions.
 - **Real-Time Synchronization:** WebSockets via Socket.io ensure immediate state propagation across all connected clients for replies and comments.
 - **Automated Notifications:** Event-driven email alerts and in-app toast notifications keep team members informed of critical updates.
-- **Responsive UI/UX:** A highly polished, responsive interface built with Tailwind CSS, featuring glassmorphism elements and native dark mode support.
+- **Next-Gen Premium UI:** A complete structural redesign featuring an immersive "Linear-inspired" dark mode, floating glassmorphism layouts, a dynamic bento-box dashboard, and cinematic video elements.
 
 ---
 
