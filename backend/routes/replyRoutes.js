@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const fs = require('fs');
-const streamifier = require('streamifier');
+const os = require('os');
+const path = require('path');
 const authenticateToken = require('../middleware/authMiddleware');
 const cloudinary = require('../config/cloudinary');
 const groq = require('../config/groq');
@@ -13,7 +14,8 @@ const User = require('../models/User');
 const sendNotificationEmail = require('../utils/emailService');
 let io;
 
-const upload = multer();
+const tempDir = os.tmpdir();
+const upload = multer({ dest: tempDir });
 router.setSocketIo = (socketIo) => { io = socketIo; };
 
 router.post('/', authenticateToken, upload.single('video'), async (req, res) => {
@@ -41,26 +43,26 @@ router.post('/', authenticateToken, upload.single('video'), async (req, res) => 
             return res.status(403).json({ error: "You do not have access to this meeting." });
         }
 
-        let uploadFromBuffer = (buffer) => {
-            return new Promise((resolve, reject) => {
-                let cld_upload_stream = cloudinary.uploader.upload_stream(
-                    { resource_type: 'video' },
-                    (error, result) => {
-                        if (result) { resolve(result); } else { reject(error); }
-                    }
-                );
-                streamifier.createReadStream(buffer).pipe(cld_upload_stream);
-            });
-        };
-
-        const result = await uploadFromBuffer(req.file.buffer);
-        const tempFilePath = `./temp_${Date.now()}.webm`;
-        fs.writeFileSync(tempFilePath, req.file.buffer);
-
+        const tempFilePath = req.file.path;
+        let result;
         let transcriptText = "";
         let summaryText = "";
 
         try {
+            let uploadFromFile = (filePath) => {
+                return new Promise((resolve, reject) => {
+                    let cld_upload_stream = cloudinary.uploader.upload_stream(
+                        { resource_type: 'video' },
+                        (error, result) => {
+                            if (result) { resolve(result); } else { reject(error); }
+                        }
+                    );
+                    fs.createReadStream(filePath).pipe(cld_upload_stream);
+                });
+            };
+
+            result = await uploadFromFile(tempFilePath);
+
             const transcription = await groq.audio.transcriptions.create({
                 file: fs.createReadStream(tempFilePath),
                 model: "whisper-large-v3",
