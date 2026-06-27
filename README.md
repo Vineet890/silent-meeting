@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./logo.svg" alt="SyncLoop Logo" width="80" height="80" />
+  <img src="./logo.svg?v=1" alt="SyncLoop Logo" width="80" height="80" />
   <h1>SyncLoop</h1>
   <p><strong>An Asynchronous Video Communication Platform for Distributed Engineering Teams</strong></p>
   
@@ -71,7 +71,7 @@ graph TD
 
 ## Screenshots
 
-> **Note to Reviewer:** Replace these placeholders with actual high-resolution screenshots of the deployed application.
+
 
 ### Home Dashboard (Dark Mode)
 ![Dark Mode Home](./assets/dark-home.png)
@@ -118,8 +118,8 @@ graph TD
 
 **1. Clone the repository**
 ```bash
-git clone https://github.com/Vineet890/syncloop.git
-cd syncloop
+git clone https://github.com/Vineet890/silent-meeting.git
+cd silent-meeting
 ```
 
 **2. Configure and Start the Backend**
